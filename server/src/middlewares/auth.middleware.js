@@ -21,3 +21,15 @@ export const protectRoute = async (req, res, next) => {
     res.status(500).json({ message: "Server internal error." });
   }
 };
+
+export const adminOnly = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Pengguna tidak ditemukan." });
+  }
+
+  if (req.user.email !== process.env.ADMIN_EMAIL) {
+    return res.status(403).json({ message: "Hanya admin yang bisa akses." });
+  }
+
+  next();
+};
