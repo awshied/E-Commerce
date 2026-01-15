@@ -52,7 +52,7 @@ export const addToCart = async (req, res) => {
     if (existingItem) {
       const newQuantity = existingItem.quantity + 1;
       if (product.stock < newQuantity) {
-        res.status(400).json({ error: "Stok sudah habis." });
+        return res.status(400).json({ error: "Stok sudah habis." });
       }
       existingItem.quantity = newQuantity;
     } else {
@@ -75,7 +75,7 @@ export const updateCartItem = async (req, res) => {
     const { productId } = req.params;
     const { quantity } = req.body;
 
-    if (quantity < 1) {
+    if (quantity == null || typeof quantity !== "number" || quantity < 1) {
       return res.status(400).json({ error: "Minimal harus ada 1 kuantitas." });
     }
 

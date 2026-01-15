@@ -20,7 +20,12 @@ const __dirname = path.resolve();
 
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
