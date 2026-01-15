@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import path from "path";
+import cors from "cors";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ const __dirname = path.resolve();
 
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
