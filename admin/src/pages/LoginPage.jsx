@@ -67,7 +67,7 @@ const LoginPage = () => {
                   disabled={isLoggingIn}
                 >
                   {isLoggingIn ? (
-                    <LoaderIcon className="w-full h-5 animate-spin text-center" />
+                    <LoaderIcon className="w-full h-5 animate-spin" />
                   ) : (
                     "Masuk"
                   )}
