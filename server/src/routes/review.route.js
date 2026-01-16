@@ -9,6 +9,7 @@ const router = Router();
 
 router.use(protectRoute);
 
+// Kelola Review dan Rating
 router.post("/", createReview);
 router.delete("/:reviewId", deleteReview);
 

@@ -1,1 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Lobster&family=Mona+Sans:ital,wght@0,200..900;1,200..900&family=Poppins:wght@100;400;500;800&display=swap");
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: night;
+}
+
+@layer components {
+  .icon-active-yellow {
+    filter: brightness(0) saturate(100%) invert(96%) sepia(84%) saturate(6118%)
+      hue-rotate(302deg) brightness(105%) contrast(101%);
+  }
+}

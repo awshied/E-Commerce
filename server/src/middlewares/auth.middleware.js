@@ -27,7 +27,7 @@ export const adminOnly = (req, res, next) => {
     return res.status(401).json({ message: "Pengguna tidak ditemukan." });
   }
 
-  if (req.user.email !== process.env.ADMIN_EMAIL) {
+  if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Hanya admin yang bisa akses." });
   }
 

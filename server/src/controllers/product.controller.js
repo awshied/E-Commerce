@@ -1,5 +1,6 @@
 import { Product } from "../models/product.model.js";
 
+// Menangkap Semua Produk yang Tersedia
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;

@@ -20,7 +20,7 @@ const fileFilter = (req, file, cb) => {
   if (extname && mimeType) {
     cb(null, true);
   } else {
-    cb(new Error("Hanya bisa menggunakan format (jpeg, jpg, png, webp)"));
+    cb(new Error("Hanya bisa menggunakan format (jpeg, jpg, png, webp)."));
   }
 };
 

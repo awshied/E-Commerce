@@ -9,6 +9,7 @@ import { protectRoute } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
+// Kelola Form
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);

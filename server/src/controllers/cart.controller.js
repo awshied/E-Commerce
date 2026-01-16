@@ -18,7 +18,7 @@ export const getCart = async (req, res) => {
 
     res.status(200).json({ cart });
   } catch (error) {
-    console.error("Error di controller getCart", error);
+    console.error("Error di controller getCart:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
@@ -65,7 +65,7 @@ export const addToCart = async (req, res) => {
       .status(200)
       .json({ message: "Produk telah ditambahkan ke dalam keranjang.", cart });
   } catch (error) {
-    console.error("Error di controller addToCart", error);
+    console.error("Error di controller addToCart:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
