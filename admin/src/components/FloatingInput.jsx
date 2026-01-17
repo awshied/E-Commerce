@@ -18,21 +18,19 @@ const FloatingInput = ({
 
   return (
     <div className="relative w-full">
-      {/* Label */}
       <label
         className={`
           absolute left-0 transition-all duration-300 font-semibold
           ${
             isActive
               ? "-top-2 text-[#ffc586] text-sm"
-              : "top-1 text-[#d6d6d6] text-base"
+              : "top-1 text-[#d6d6d6] text-lg"
           }
         `}
       >
         {label}
       </label>
 
-      {/* ========== Render TEXTAREA ========== */}
       {type === "textarea" ? (
         <textarea
           name={name}
@@ -49,7 +47,6 @@ const FloatingInput = ({
           "
         />
       ) : type === "boolean" ? (
-        /* ========== Render BOOLEAN CHECKBOX ========== */
         <input
           type="checkbox"
           name={name}
@@ -62,7 +59,6 @@ const FloatingInput = ({
           "
         />
       ) : (
-        /* ========== Render TEXT / NUMBER / OTHER INPUTS ========== */
         <input
           type={type}
           name={name}
@@ -78,7 +74,6 @@ const FloatingInput = ({
         />
       )}
 
-      {/* ICON */}
       {icon && type !== "boolean" && (
         <img
           src={icon}
