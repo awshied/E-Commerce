@@ -84,8 +84,8 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["dikemas", "dikirim", "diterima"],
-      default: "dikemas",
+      enum: ["Dikemas", "Dikirim", "Diterima"],
+      default: "Dikemas",
     },
     deliveredAt: {
       type: Date,
@@ -96,7 +96,7 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const Order = mongoose.model("Order", orderSchema);

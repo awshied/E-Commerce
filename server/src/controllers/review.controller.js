@@ -26,14 +26,14 @@ export const createReview = async (req, res) => {
         .json({ error: "Tidak terotorisasi untuk memberi rating." });
     }
 
-    if (order.status !== "diterima") {
+    if (order.status !== "Diterima") {
       return res.status(400).json({
         error: "Hanya bisa memberi rating pada pesanan yang diterima.",
       });
     }
 
     const productInOrder = order.orderItems.find(
-      (item) => item.product.toString() === productId.toString()
+      (item) => item.product.toString() === productId.toString(),
     );
     if (!productInOrder) {
       return res
@@ -66,7 +66,7 @@ export const createReview = async (req, res) => {
         averageRating: totalRating / reviews.length,
         totalReviews: reviews.length,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedProduct) {

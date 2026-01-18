@@ -33,9 +33,9 @@ const App = () => {
         >
           <Route index element={<Navigate to={"/dashboard"} />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="produk" element={<ProductsPage />} />
-          <Route path="pelanggan" element={<CustomersPage />} />
-          <Route path="pesanan" element={<OrdersPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="orders" element={<OrdersPage />} />
         </Route>
       </Routes>
 

@@ -16,7 +16,7 @@ const Sidebar = () => {
         className="drawer-overlay"
       ></label>
       <div className="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-17 is-drawer-open:w-60">
-        <div className="p-2 w-full mb-2">
+        <div className="p-2 w-full my-2">
           <div className="flex items-center gap-2">
             <img src={logoWeb} className="h-12 w-auto" />
             <span className="text-xl font-bold is-drawer-close:hidden text-base-content mt-1">

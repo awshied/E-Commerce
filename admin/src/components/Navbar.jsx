@@ -16,17 +16,17 @@ export const navigationBar = [
   },
   {
     name: "Produk",
-    path: "/produk",
+    path: "/products",
     icon: product,
   },
   {
     name: "Pelanggan",
-    path: "/pelanggan",
+    path: "/customers",
     icon: customer,
   },
   {
     name: "Pesanan",
-    path: "/pesanan",
+    path: "/orders",
     icon: order,
   },
 ];
