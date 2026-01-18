@@ -49,7 +49,12 @@ const Navbar = () => {
       const base64Image = reader.result;
       setSelectedImg(base64Image);
 
-      await updateProfile({ imageUrl: base64Image });
+      try {
+        await updateProfile({ imageUrl: base64Image });
+      } catch (error) {
+        setSelectedImg(null);
+        console.error("Gagal mengganti foto profil:", error);
+      }
     };
   };
 
@@ -76,7 +81,7 @@ const Navbar = () => {
             Selamat Datang,
           </small>
           <span className="text-lg font-bold text-secondary truncate">
-            {authUser.username}
+            {authUser?.username}
           </span>
         </div>
         <div className="avatar">

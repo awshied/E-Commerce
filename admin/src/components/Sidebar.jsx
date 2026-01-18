@@ -2,6 +2,7 @@ import React from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { navigationBar } from "./Navbar";
 import { useLocation, Link } from "react-router";
+import logoWeb from "../assets/logo-web.png";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -17,7 +18,7 @@ const Sidebar = () => {
       <div className="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-17 is-drawer-open:w-60">
         <div className="p-2 w-full mb-2">
           <div className="flex items-center gap-2">
-            <img src="/src/assets/logo-web.png" className="h-12 w-auto" />
+            <img src={logoWeb} className="h-12 w-auto" />
             <span className="text-xl font-bold is-drawer-close:hidden text-base-content mt-1">
               GlacioCore
             </span>

@@ -52,7 +52,7 @@ export const useAuthStore = create((set) => ({
       toast.success("Foto profil telah diganti.");
     } catch (error) {
       console.error("Foto profil tidak bisa diganti:", error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Gagal memperbarui profil.");
     }
   },
 }));

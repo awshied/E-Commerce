@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { LoaderIcon } from "lucide-react";
 import FloatingInput from "../components/FloatingInput";
+import logoWeb from "../assets/logo-web.png";
+import emailIcon from "../assets/icons/email.png";
+import passwordIcon from "../assets/icons/password.png";
+import adminWallpaper from "../assets/admin-panel-wallpaper.png";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -19,11 +23,7 @@ const LoginPage = () => {
         <div className="w-full max-w-xl">
           {/* Header */}
           <div className="flex flex-col items-center justify-center gap-2">
-            <img
-              src="/src/assets/logo-web.png"
-              alt="Logo Web"
-              className="w-32 h-auto mb-4"
-            />
+            <img src={logoWeb} alt="Logo Web" className="w-32 h-auto mb-4" />
             <h2 className="text-4xl text-center font-bold text-slate-200">
               Administrator
             </h2>
@@ -44,7 +44,7 @@ const LoginPage = () => {
                 label="Email"
                 name="email"
                 type="email"
-                icon="/src/assets/icons/email.png"
+                icon={emailIcon}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -58,7 +58,7 @@ const LoginPage = () => {
                 label="Password"
                 name="password"
                 type="password"
-                icon="/src/assets/icons/password.png"
+                icon={passwordIcon}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
@@ -85,7 +85,7 @@ const LoginPage = () => {
       {/* Gambar - Kanan */}
       <div className="hidden lg:flex flex-1 items-center justify-center overflow-hidden">
         <img
-          src="/src/assets/admin-panel-wallpaper.png"
+          src={adminWallpaper}
           alt="Admin Panel"
           className="w-160 h-140 rounded-4xl border-3 border-secondary"
         />
