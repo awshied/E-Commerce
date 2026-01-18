@@ -1,22 +1,15 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { orderApi, statsApi } from "../lib/api";
+import { statsApi } from "../lib/api";
 import myOrder from "../assets/icons/my-order.png";
 import revenue from "../assets/icons/revenue.png";
 import client from "../assets/icons/client.png";
 
 const DashboardPage = () => {
-  const { data: ordersData, isLoading: ordersLoading } = useQuery({
-    queryKey: ["orders"],
-    queryFn: orderApi.getAll,
-  });
-
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ["dashboardStats"],
     queryFn: statsApi.getDashboard,
   });
-
-  const recentOrders = ordersData?.orders?.slice(0, 5) || [];
 
   const statsCards = [
     {
@@ -28,7 +21,7 @@ const DashboardPage = () => {
       name: "Total Pendapatan",
       value: statsLoading
         ? "..."
-        : `Rp. ${(statsData.totalRevenue || 0).toFixed(3)}`,
+        : `Rp. ${(statsData?.totalRevenue || 0).toLocaleString("id-ID")}`,
       icon: revenue,
     },
     {
