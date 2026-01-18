@@ -25,17 +25,17 @@ const App = () => {
       <Routes>
         <Route
           path="/login"
-          element={authUser ? <Navigate to={"/beranda"} /> : <LoginPage />}
+          element={authUser ? <Navigate to={"/dashboard"} /> : <LoginPage />}
         />
         <Route
           path="/"
           element={authUser ? <DashboardLayout /> : <Navigate to={"/login"} />}
         >
-          <Route index element={<Navigate to={"/beranda"} />} />
-          <Route path="beranda" element={<DashboardPage />} />
+          <Route index element={<Navigate to={"/dashboard"} />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="produk" element={<ProductsPage />} />
-          <Route path="pesanan" element={<OrdersPage />} />
           <Route path="pelanggan" element={<CustomersPage />} />
+          <Route path="pesanan" element={<OrdersPage />} />
         </Route>
       </Routes>
 

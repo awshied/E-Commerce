@@ -1,14 +1,67 @@
 import React from "react";
 import { useAuthStore } from "../store/useAuthStore";
+import { navigationBar } from "./Navbar";
+import { useLocation, Link } from "react-router";
 
 const Sidebar = () => {
+  const location = useLocation();
   const { logout } = useAuthStore();
+
   return (
-    <div className="flex gap-2">
-      Sidebar
-      <button onClick={logout} className="btn btn-primary">
-        Logout
-      </button>
+    <div className="drawer-side is-drawer-close:overflow-visible">
+      <label
+        htmlFor="my-drawer"
+        aria-label="close sidebar"
+        className="drawer-overlay"
+      ></label>
+      <div className="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-17 is-drawer-open:w-60">
+        <div className="p-2 w-full mb-2">
+          <div className="flex items-center gap-2">
+            <img src="/src/assets/logo-web.png" className="h-12 w-auto" />
+            <span className="text-xl font-bold is-drawer-close:hidden text-base-content mt-1">
+              GlacioCore
+            </span>
+          </div>
+        </div>
+
+        <ul className="p-2 menu w-full grow flex flex-col gap-3">
+          {navigationBar.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  className={`is-drawer-close:tooltip is-drawer-close:tooltip-right ${isActive ? "bg-neutral text-white" : ""}`}
+                >
+                  <img
+                    src={item.icon}
+                    alt={item.name}
+                    className="size-6 mr-2"
+                  />
+                  <span className="is-drawer-close:hidden text-base font-semibold">
+                    {item.name}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="p-5 w-full">
+          <hr className="w-full border border-neutral mb-4" />
+          <button
+            onClick={logout}
+            className="flex justify-start w-full bg-base-200 gap-2 cursor-pointer"
+          >
+            <img src="/src/assets/icons/logout.png" className="size-6 mr-2" />
+            <div className="min-w-0 is-drawer-close:hidden">
+              <p className="text-base font-semibold truncate text-error">
+                Keluar
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

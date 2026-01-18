@@ -105,7 +105,7 @@ export const updateProfile = async (req, res) => {
   try {
     const { imageUrl } = req.body;
     if (!imageUrl)
-      return res.status(401).json({ message: "Komuknya harus ada." });
+      return res.status(400).json({ message: "Komuknya harus ada." });
 
     const userId = req.user._id;
 
@@ -114,7 +114,7 @@ export const updateProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { imageUrl: uploadResponse.secure_url },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json(updatedUser);

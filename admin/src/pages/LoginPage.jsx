@@ -20,7 +20,7 @@ const LoginPage = () => {
           {/* Header */}
           <div className="flex flex-col items-center justify-center gap-2">
             <img
-              src="/logo-web.png"
+              src="/src/assets/logo-web.png"
               alt="Logo Web"
               className="w-32 h-auto mb-4"
             />
@@ -44,7 +44,7 @@ const LoginPage = () => {
                 label="Email"
                 name="email"
                 type="email"
-                icon="/icons/email.png"
+                icon="/src/assets/icons/email.png"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -58,7 +58,7 @@ const LoginPage = () => {
                 label="Password"
                 name="password"
                 type="password"
-                icon="/icons/password.png"
+                icon="/src/assets/icons/password.png"
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
@@ -85,8 +85,8 @@ const LoginPage = () => {
       {/* Gambar - Kanan */}
       <div className="hidden lg:flex flex-1 items-center justify-center overflow-hidden">
         <img
-          src="/admin-panel-wallpaper.png"
-          alt="Owl Image"
+          src="/src/assets/admin-panel-wallpaper.png"
+          alt="Admin Panel"
           className="w-160 h-140 rounded-4xl border-3 border-secondary"
         />
       </div>

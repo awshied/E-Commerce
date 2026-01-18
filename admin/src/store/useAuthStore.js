@@ -44,4 +44,15 @@ export const useAuthStore = create((set) => ({
       console.error("Gagal logout:", error);
     }
   },
+
+  updateProfile: async (data) => {
+    try {
+      const res = await axiosInstance.put("/auth/update-profile", data);
+      set({ authUser: res.data });
+      toast.success("Foto profil telah diganti.");
+    } catch (error) {
+      console.error("Foto profil tidak bisa diganti:", error);
+      toast.error(error.response.data.message);
+    }
+  },
 }));
