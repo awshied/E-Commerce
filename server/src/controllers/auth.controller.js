@@ -125,7 +125,7 @@ export const updateProfile = async (req, res) => {
 
     if (fileSizeInBytes > MAX_SIZE) {
       return res.status(400).json({
-        message: "Ukuran gambar maksimal 2MB.",
+        message: "Ukuran gambar maksimal 5MB.",
       });
     }
 

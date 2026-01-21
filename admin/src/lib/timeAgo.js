@@ -23,7 +23,7 @@ export const timeAgo = (date) => {
   }
 
   const weeks = Math.floor(days / 7);
-  if (weeks < 4) {
+  if (days < 30) {
     return `${weeks} minggu`;
   }
 

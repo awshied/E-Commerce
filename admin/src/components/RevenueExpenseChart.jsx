@@ -40,10 +40,9 @@ const RevenueExpenseChart = () => {
 
   const chartData = MONTHS.map((month, index) => ({
     month,
-    revenue: revenueExpenseData?.revenue[index] || 0,
-    expense: revenueExpenseData?.expense[index] || 0,
+    revenue: revenueExpenseData?.revenue?.[index] ?? 0,
+    expense: revenueExpenseData?.expense?.[index] ?? 0,
   }));
-
   return (
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">

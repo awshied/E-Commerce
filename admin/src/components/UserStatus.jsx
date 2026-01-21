@@ -5,13 +5,17 @@ import locationIcon from "../assets/icons/location.png";
 import OnlineUserItem from "./OnlineUserItem";
 
 const UserStatus = () => {
-  const { data: userStatusData, isLoading: userStatusLoading } = useQuery({
+  const {
+    data: userStatusData,
+    isLoading: userStatusLoading,
+    isError,
+  } = useQuery({
     queryKey: ["userOnlineStatus"],
     queryFn: statsApi.getUserStatus,
     refetchInterval: 10000,
   });
 
-  if (userStatusLoading || !userStatusData) {
+  if (userStatusLoading) {
     return (
       <div className="card bg-base-200 shadow-xl">
         <div className="card-body">
@@ -22,12 +26,28 @@ const UserStatus = () => {
       </div>
     );
   }
+  if (isError || !userStatusData) {
+    return (
+      <div className="card bg-base-200 shadow-xl">
+        <div className="card-body">
+          <div className="flex justify-center py-8 text-error">
+            Gagal memuat status pengguna.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const users = [
-    ...userStatusData.onlineUsers.map((u) => ({ ...u, status: "online" })),
-    ...userStatusData.offlineUsers.map((u) => ({ ...u, status: "offline" })),
+    ...(userStatusData.onlineUsers ?? []).map((u) => ({
+      ...u,
+      status: "online",
+    })),
+    ...(userStatusData.offlineUsers ?? []).map((u) => ({
+      ...u,
+      status: "offline",
+    })),
   ];
-
   return (
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">

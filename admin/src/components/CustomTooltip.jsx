@@ -15,7 +15,7 @@ const CustomTooltip = ({ active, payload }) => {
     >
       {/* Label Bulan */}
       <span className="text-base-content font-bold md:text-sm text-xs">
-        {payload && payload.length > 0 && payload[0].payload.monthMeans}
+        {payload[0]?.payload?.monthMeans}{" "}
       </span>
 
       {/* Pendapatan */}
@@ -23,7 +23,7 @@ const CustomTooltip = ({ active, payload }) => {
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-primary rounded-full"></div>
           <span className="md:text-sm text-xs text-base-content font-medium">
-            {revenue.value.toLocaleString()}
+            {(revenue.value ?? 0).toLocaleString()}
           </span>
         </div>
       )}
@@ -34,7 +34,7 @@ const CustomTooltip = ({ active, payload }) => {
           <div className="w-2 h-2 bg-secondary rounded-full"></div>
 
           <span className="md:text-sm text-xs text-base-content font-medium">
-            {expenses.value.toLocaleString()}
+            {(expenses.value ?? 0).toLocaleString()}
           </span>
         </div>
       )}

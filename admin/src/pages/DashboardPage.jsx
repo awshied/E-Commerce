@@ -42,7 +42,7 @@ const DashboardPage = () => {
         <ul className="px-3">
           <li>
             <Link to="/dashboard">
-              <img src={dashboard} alt={dashboard} className="size-6" />
+              <img src={dashboard} alt="Dashboard" className="size-6" />
             </Link>
           </li>
           <li className="font-semibold text-white">Dashboard</li>

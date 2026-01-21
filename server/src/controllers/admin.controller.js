@@ -289,8 +289,7 @@ export const getRevenueExpenseChart = async (req, res) => {
 // Menangkap Status Keaktifan Pelanggan yang Tersedia
 export const getUserOnlineStatus = async (req, res) => {
   try {
-    const activeLimit = 60 * 1000; // 1 menit
-    const threshold = new Date(Date.now() - activeLimit);
+    const activeLimit = 60 * 1000;
 
     const users = await User.find().select(
       "username imageUrl addresses lastActive",
