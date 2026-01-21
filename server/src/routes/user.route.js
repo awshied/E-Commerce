@@ -6,6 +6,7 @@ import {
   deleteAddress,
   getAddress,
   getWishlist,
+  pingUser,
   removeFromWishlist,
   updateAddress,
 } from "../controllers/user.controller.js";
@@ -13,6 +14,7 @@ import {
 const router = Router();
 
 router.use(protectRoute);
+router.post("/ping", pingUser);
 
 // Kelola Alamat
 router.post("/addresses", addAddress);

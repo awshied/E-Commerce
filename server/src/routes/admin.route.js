@@ -7,6 +7,8 @@ import {
   getAllOrders,
   getAllProducts,
   getDashboardStats,
+  getRevenueExpenseChart,
+  getUserOnlineStatus,
   updateOrderStatus,
   updateProduct,
 } from "../controllers/admin.controller.js";
@@ -29,6 +31,9 @@ router.patch("/orders/:orderId/status", updateOrderStatus);
 // Kelola Customer
 router.get("/customers", getAllCustomers);
 
+// Pantau Dashboard
 router.get("/stats", getDashboardStats);
+router.get("/revenueExpense", getRevenueExpenseChart);
+router.get("/onlineStatus", getUserOnlineStatus);
 
 export default router;

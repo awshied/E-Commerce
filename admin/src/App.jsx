@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { Toaster } from "react-hot-toast";
 
+import useUserPing from "./hooks/useUserPing";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProductsPage from "./pages/ProductsPage";
@@ -12,6 +13,7 @@ import PageLoader from "./components/PageLoader";
 import DashboardLayout from "./layouts/DashboardLayout";
 
 const App = () => {
+  useUserPing();
   const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
 
   useEffect(() => {

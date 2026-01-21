@@ -49,6 +49,7 @@ export const register = async (req, res) => {
         imageUrl: newUser.imageUrl,
         addresses: newUser.addresses,
         wishlist: newUser.wishlist,
+        lastActive: newUser.lastActive,
       });
     } else {
       res.status(400).json({ message: "Datamu ga valid, coba lagi!" });
@@ -87,6 +88,7 @@ export const login = async (req, res) => {
       imageUrl: user.imageUrl,
       addresses: user.addresses,
       wishlist: user.wishlist,
+      lastActive: user.lastActive,
     });
   } catch (error) {
     console.error("Error di controller login:", error);
@@ -104,22 +106,45 @@ export const logout = async (_, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { imageUrl } = req.body;
+
     if (!imageUrl)
-      return res.status(400).json({ message: "Komuknya harus ada." });
+      return res.status(400).json({ message: "Gambar wajib diunggah." });
+
+    const base64Regex = /^data:image\/(png|jpeg|jpg|webp);base64,/;
+
+    if (!base64Regex.test(imageUrl)) {
+      return res.status(400).json({
+        message: "Format gambar tidak valid.",
+      });
+    }
+
+    const base64Data = imageUrl.split(",")[1];
+    const fileSizeInBytes = Buffer.from(base64Data, "base64").length;
+
+    const MAX_SIZE = 5 * 1024 * 1024;
+
+    if (fileSizeInBytes > MAX_SIZE) {
+      return res.status(400).json({
+        message: "Ukuran gambar maksimal 2MB.",
+      });
+    }
 
     const userId = req.user._id;
 
-    const uploadResponse = await cloudinary.uploader.upload(imageUrl);
+    const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
+      folder: "profile",
+      resource_type: "image",
+    });
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { imageUrl: uploadResponse.secure_url },
       { new: true },
-    );
+    ).select("-password");
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.error("Ada kesalahan saat memperbarui komuknya:", error);
+    console.error("Gagal update foto profil:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

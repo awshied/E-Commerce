@@ -37,4 +37,23 @@ export const statsApi = {
     const { data } = await axiosInstance.get("/admin/stats");
     return data;
   },
+
+  getUserStatus: async () => {
+    const { data } = await axiosInstance.get("/admin/onlineStatus");
+    return data;
+  },
+
+  ping: async () => {
+    const { data } = await axiosInstance.post("/users/ping");
+    return data;
+  },
+};
+
+export const chartApi = {
+  getRevenueAndExpense: async (year) => {
+    const { data } = await axiosInstance.get(
+      `/admin/revenueExpense?year=${year}`,
+    );
+    return data;
+  },
 };

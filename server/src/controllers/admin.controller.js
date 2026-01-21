@@ -2,6 +2,7 @@ import cloudinary from "../config/cloudinary.js";
 import { Product } from "../models/product.model.js";
 import { Order } from "../models/order.model.js";
 import { User } from "../models/user.model.js";
+import { Expense } from "../models/expense.model.js";
 
 // Membuat atau Menambahkan Produk Baru
 export const createProduct = async (req, res) => {
@@ -220,6 +221,107 @@ export const getDashboardStats = async (_, res) => {
     });
   } catch (error) {
     console.error("Dashboard tidak terbaca:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menangkap Data Pendapatan dan Pengeluaran Setiap Bulan dalam Setahun
+export const getRevenueExpenseChart = async (req, res) => {
+  try {
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+
+    const revenue = Array(12).fill(0);
+    const expense = Array(12).fill(0);
+
+    const revenueData = await Order.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(`${year}-01-01`),
+            $lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          total: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+
+    revenueData.forEach((item) => {
+      revenue[item._id - 1] = item.total;
+    });
+
+    const expenseData = await Expense.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(`${year}-01-01`),
+            $lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    expenseData.forEach((item) => {
+      expense[item._id - 1] = item.total;
+    });
+
+    res.status(200).json({
+      year,
+      revenue,
+      expense,
+    });
+  } catch (error) {
+    console.error("Chart tidak terbaca:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menangkap Status Keaktifan Pelanggan yang Tersedia
+export const getUserOnlineStatus = async (req, res) => {
+  try {
+    const activeLimit = 60 * 1000; // 1 menit
+    const threshold = new Date(Date.now() - activeLimit);
+
+    const users = await User.find().select(
+      "username imageUrl addresses lastActive",
+    );
+
+    const now = new Date();
+
+    const formattedUsers = users.map((user) => {
+      const defaultAddress = user.addresses?.find((addr) => addr.isDefault);
+
+      return {
+        _id: user._id,
+        username: user.username,
+        imageUrl: user.imageUrl,
+        city: defaultAddress?.city || null,
+        lastActive: user.lastActive,
+        isOnline: now - new Date(user.lastActive) <= activeLimit,
+      };
+    });
+
+    const onlineUsers = formattedUsers.filter((u) => u.isOnline);
+    const offlineUsers = formattedUsers.filter((u) => !u.isOnline);
+
+    res.status(200).json({
+      totalOnline: onlineUsers.length,
+      totalOffline: offlineUsers.length,
+      onlineUsers,
+      offlineUsers,
+    });
+  } catch (error) {
+    console.error("Status customer tidak terbaca:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

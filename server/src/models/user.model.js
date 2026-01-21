@@ -72,10 +72,14 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    lastActive: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const User = mongoose.model("User", userSchema);

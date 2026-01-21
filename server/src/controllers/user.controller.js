@@ -168,6 +168,9 @@ export const addToWishlist = async (req, res) => {
 export const getWishlist = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate("wishlist");
+    if (!user) {
+      return res.status(404).json({ error: "User tidak ditemukan." });
+    }
 
     res.status(200).json({ wishlist: user.wishlist });
   } catch (error) {
@@ -194,6 +197,21 @@ export const removeFromWishlist = async (req, res) => {
     res.status(200).json({ message: "Produk telah dihapus dari favorit." });
   } catch (error) {
     console.error("Error di controller removeFromWishlist:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+export const pingUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    await User.findByIdAndUpdate(userId, {
+      lastActive: new Date(),
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error di controller pingUser:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
