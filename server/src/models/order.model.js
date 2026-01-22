@@ -84,8 +84,8 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Dikemas", "Dikirim", "Diterima"],
-      default: "Dikemas",
+      enum: ["dikemas", "dikirim", "diterima"],
+      default: "dikemas",
     },
     deliveredAt: {
       type: Date,

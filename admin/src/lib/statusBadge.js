@@ -5,11 +5,11 @@ export const capitalizeText = (text) => {
 
 export const getOrderStatusBadge = (status) => {
   switch (status?.toLowerCase()) {
-    case "Diterima":
+    case "diterima":
       return "badge-success";
-    case "Dikirim":
+    case "dikirim":
       return "badge-info";
-    case "Dikemas":
+    case "dikemas":
       return "badge-warning";
     default:
       return "badge-ghost";
@@ -17,8 +17,11 @@ export const getOrderStatusBadge = (status) => {
 };
 
 export const getStockStatusBadge = (stock) => {
+  if (stock == null || isNaN(stock))
+    return { text: "Stok Tidak Diketahui", class: "badge-ghost" };
+
   if (stock === 0) return { text: "Stok Habis", class: "badge-error" };
-  if (stock < 20) return { text: "Stock Hampir Habis", class: "badge-warning" };
+  if (stock < 20) return { text: "Stok Hampir Habis", class: "badge-warning" };
   return { text: "Stok Teredia", class: "badge-success" };
 };
 

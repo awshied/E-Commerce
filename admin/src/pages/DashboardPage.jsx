@@ -130,7 +130,7 @@ const DashboardPage = () => {
                       <td>
                         <div>
                           <div className="font-medium">
-                            {order.shippingAddress.fullName}
+                            {order.shippingAddress?.fullName || "N/A"}
                           </div>
                           <div className="text-sm opacity-60">
                             {order.orderItems.length} item(s)
@@ -146,7 +146,7 @@ const DashboardPage = () => {
                       </td>
                       <td>
                         <span className="font-semibold">
-                          ${order.totalPrice.toFixed(2)}
+                          Rp. {order.totalPrice.toLocaleString("id-ID")}
                         </span>
                       </td>
                       <td>

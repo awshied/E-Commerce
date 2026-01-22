@@ -148,7 +148,7 @@ export const updateOrderStatus = async (req, res) => {
     const { orderId } = req.params;
     const { status } = req.body;
 
-    if (!["Dikemas", "Dikirim", "Diterima"].includes(status)) {
+    if (!["dikemas", "dikirim", "diterima"].includes(status)) {
       return res.status(400).json({ message: "Status tidak valid." });
     }
 
@@ -159,11 +159,11 @@ export const updateOrderStatus = async (req, res) => {
 
     order.status = status;
 
-    if (status === "Dikirim" && !order.shippedAt) {
+    if (status === "dikirim" && !order.shippedAt) {
       order.shippedAt = new Date();
     }
 
-    if (status === "Diterima" && !order.deliveredAt) {
+    if (status === "diterima" && !order.deliveredAt) {
       order.deliveredAt = new Date();
     }
 
@@ -195,7 +195,7 @@ export const getDashboardStats = async (_, res) => {
     const totalOrders = await Order.countDocuments();
 
     const deliveredOrders = await Order.countDocuments({
-      status: "Diterima",
+      status: "diterima",
     });
 
     const revenueResult = await Order.aggregate([

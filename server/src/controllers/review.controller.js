@@ -26,7 +26,7 @@ export const createReview = async (req, res) => {
         .json({ error: "Tidak terotorisasi untuk memberi rating." });
     }
 
-    if (order.status !== "Diterima") {
+    if (order.status !== "diterima") {
       return res.status(400).json({
         error: "Hanya bisa memberi rating pada pesanan yang diterima.",
       });
