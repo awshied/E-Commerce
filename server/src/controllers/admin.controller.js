@@ -287,7 +287,7 @@ export const getRevenueExpenseChart = async (req, res) => {
 };
 
 // Menangkap Status Keaktifan Pelanggan yang Tersedia
-export const getUserOnlineStatus = async (req, res) => {
+export const getUserOnlineStatus = async (_, res) => {
   try {
     const activeLimit = 60 * 1000;
 

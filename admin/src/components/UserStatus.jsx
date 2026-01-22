@@ -54,7 +54,7 @@ const UserStatus = () => {
         <div className="flex justify-between items-center">
           {/* Header */}
           <div className="flex justify-center flex-col gap-2">
-            <h2 className="card-title text-lg font-bold">Pelanggan</h2>
+            <h2 className="card-title text-lg font-bold">Jumlah Pengguna</h2>
             <span className="text-xs stat-title font-medium">
               Status keaktifan pelanggan yang tersedia.
             </span>
@@ -80,7 +80,10 @@ const UserStatus = () => {
         {/* Main */}
         <div className="flex flex-col gap-3 max-h-105 mt-2 overflow-y-auto">
           {users.map((user) => (
-            <div key={user._id} className="flex items-center justify-between">
+            <div
+              key={user._id}
+              className="flex items-center py-1 justify-between"
+            >
               {/* Kiri */}
               <div className="flex items-center gap-3">
                 <img
@@ -88,8 +91,8 @@ const UserStatus = () => {
                   alt={`${user.username}'s avatar`}
                   className="h-10 w-10 rounded-full object-cover"
                 />
-                <div className="flex flex-col gap-1">
-                  <span className="card-title text-sm font-semibold">
+                <div className="flex flex-col gap-1.5">
+                  <span className="card-title text-sm font-bold">
                     {user.username}
                   </span>
 
@@ -100,7 +103,7 @@ const UserStatus = () => {
                       aria-hidden="true"
                       className="w-3"
                     />
-                    <span className="text-base-content text-xs">
+                    <span className="text-base-content text-xs font-semibold">
                       {user.city || "Tidak Diketahui"}
                     </span>
                   </div>
@@ -108,7 +111,7 @@ const UserStatus = () => {
               </div>
 
               {/* Kanan */}
-              <div className="flex flex-col justify-center items-end gap-3">
+              <div className="flex flex-col justify-center items-end gap-2">
                 <OnlineUserItem user={user} />
                 <span
                   className={`text-xs font-bold ${user.status === "online" ? "text-[#ffc586]" : "text-base-content/60"}`}
