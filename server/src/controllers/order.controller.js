@@ -4,6 +4,8 @@ import { Review } from "../models/review.model.js";
 
 // Membuat atau Menambahkan Pesanan Baru
 export const createOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const user = req.user;
     const { orderItems, shippingAddress, paymentResult, totalPrice } = req.body;
@@ -12,52 +14,61 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ error: "Pesanan tidak ada." });
     }
 
+    // Validate and deduct stock atomically
     for (const item of orderItems) {
-      const product = await Product.findById(item.product._id);
-      if (!product) {
-        return res
-          .status(404)
-          .json({ error: `Produk ${item.name} tidak ditemukan.` });
-      }
-      if (product.stock < item.quantity) {
-        return res
-          .status(400)
-          .json({ error: `Stok pada ${item.name} sudah habis.` });
+      const result = await Product.findOneAndUpdate(
+        {
+          _id: item.product._id,
+          "sizes.size": item.size,
+          "sizes.stock": { $gte: item.quantity },
+        },
+        { $inc: { "sizes.$.stock": -item.quantity } },
+        { session, new: true },
+      );
+
+      if (!result) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          error: `Stok untuk ukuran ${item.size} tidak mencukupi atau produk tidak ditemukan`,
+        });
       }
     }
 
-    const order = await Order.create({
-      user: user._id,
-      orderItems,
-      shippingAddress,
-      paymentResult,
-      totalPrice,
-    });
+    const [order] = await Order.create(
+      [
+        {
+          user: user._id,
+          orderItems,
+          shippingAddress,
+          paymentResult,
+          totalPrice,
+        },
+      ],
+      { session },
+    );
 
-    for (const item of orderItems) {
-      await Product.findByIdAndUpdate(item.product._id, {
-        $inc: { stock: -item.quantity },
-      });
-    }
-
+    await session.commitTransaction();
     res.status(201).json({ message: "Pesanan berhasil dibuat.", order });
   } catch (error) {
+    await session.abortTransaction();
     console.error("Error di controller createOrder:", error);
     res.status(500).json({ message: "Server internal error." });
+  } finally {
+    session.endSession();
   }
 };
 
 // Menangkap Semua Pesanan Pengguna Yang Tersedia
 export const getUserOrder = async (req, res) => {
   try {
-    const orders = await Order.findById(req.user._id)
+    const orders = await Order.find({ user: req.user._id })
       .populate("orderItems.product")
       .sort({ createdAt: -1 });
 
     const orderIds = orders.map((order) => order._id);
     const reviews = await Review.find({ orderId: { $in: orderIds } });
     const reviewedOrderIds = new Set(
-      reviews.map((review) => review.orderId.toString())
+      reviews.map((review) => review.orderId.toString()),
     );
 
     const orderWithReviewStatus = await Promise.all(
@@ -66,7 +77,7 @@ export const getUserOrder = async (req, res) => {
           ...order.toObject(),
           hasReviewed: reviewedOrderIds.has(order._id.toString()),
         };
-      })
+      }),
     );
 
     res.status(200).json({ orders: orderWithReviewStatus });

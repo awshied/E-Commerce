@@ -16,13 +16,17 @@ export const getOrderStatusBadge = (status) => {
   }
 };
 
+export const getTotalStock = (sizes = []) => {
+  return sizes.reduce((total, s) => total + s.stock, 0);
+};
+
 export const getStockStatusBadge = (stock) => {
   if (stock == null || isNaN(stock))
-    return { text: "Stok Tidak Diketahui", class: "badge-ghost" };
+    return { text: "Tidak Diketahui", class: "badge-ghost" };
 
-  if (stock === 0) return { text: "Stok Habis", class: "badge-error" };
-  if (stock < 20) return { text: "Stok Hampir Habis", class: "badge-warning" };
-  return { text: "Stok Teredia", class: "badge-success" };
+  if (stock === 0) return { text: "Habis", class: "badge-error" };
+  if (stock < 20) return { text: "Hampir Habis", class: "badge-warning" };
+  return { text: "Tersedia", class: "badge-success" };
 };
 
 export const formatDate = (dateString) => {

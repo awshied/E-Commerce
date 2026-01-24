@@ -7,12 +7,24 @@ import { Expense } from "../models/expense.model.js";
 // Membuat atau Menambahkan Produk Baru
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, category } = req.body;
+    const { name, description, price, category, types, sizes } = req.body;
 
-    if (!name || !description || !price || !stock || !category) {
+    if (!name || !description || !price || !category || !types || !sizes) {
       return res
         .status(400)
         .json({ message: "Semua field tidak boleh kosong." });
+    }
+
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      return res.status(400).json({ message: "Harga tidak valid." });
+    }
+
+    let parsedSizes;
+    try {
+      parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    } catch {
+      return res.status(400).json({ message: "Format sizes tidak valid." });
     }
 
     if (!req.files || req.files.length === 0) {
@@ -36,9 +48,10 @@ export const createProduct = async (req, res) => {
     const product = await Product.create({
       name,
       description,
-      price: parseFloat(price),
-      stock: parseInt(stock),
+      price: parsedPrice,
       category,
+      types,
+      sizes: parsedSizes,
       images: imageUrls,
     });
 
@@ -64,7 +77,7 @@ export const getAllProducts = async (_, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, category } = req.body;
+    const { name, description, price, category, types, sizes } = req.body;
 
     const product = await Product.findById(id);
     if (!product) {
@@ -74,12 +87,29 @@ export const updateProduct = async (req, res) => {
     if (name) product.name = name;
     if (description) product.description = description;
     if (price !== undefined) product.price = parseFloat(price);
-    if (stock !== undefined) product.stock = parseInt(stock);
     if (category) product.category = category;
+    if (types) product.types = types;
+
+    if (sizes) {
+      try {
+        product.sizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+      } catch (error) {
+        return res.status(400).json({ message: "Format sizes tidak valid." });
+      }
+    }
 
     if (req.files && req.files.length > 0) {
       if (req.files.length > 3) {
         return res.status(400).json({ message: "Maksimal hanya 3 gambar." });
+      }
+
+      if (product.images && product.images.length > 0) {
+        const deletePromises = product.images.map((imageUrl) => {
+          const publicId =
+            "products/" + imageUrl.split("/products/")[1]?.split(".")[0];
+          if (publicId) return cloudinary.uploader.destroy(publicId);
+        });
+        await Promise.all(deletePromises.filter(Boolean));
       }
 
       const uploadPromises = req.files.map((file) => {
@@ -154,7 +184,7 @@ export const updateOrderStatus = async (req, res) => {
 
     const order = await Order.findById(orderId);
     if (!order) {
-      return res.status(400).json({ message: "Pesanan tidak ditemukan." });
+      return res.status(404).json({ message: "Pesanan tidak ditemukan." });
     }
 
     order.status = status;
@@ -181,7 +211,9 @@ export const updateOrderStatus = async (req, res) => {
 // Menangkap Semua Pelanggan Yang Tersedia
 export const getAllCustomers = async (_, res) => {
   try {
-    const customers = await User.find().sort({ createdAt: -1 });
+    const customers = await User.find()
+      .select("-password -refreshToken")
+      .sort({ createdAt: -1 });
     res.status(200).json({ customers });
   } catch (error) {
     console.error("Customer tidak terbaca:", error);
@@ -199,6 +231,9 @@ export const getDashboardStats = async (_, res) => {
     });
 
     const revenueResult = await Order.aggregate([
+      {
+        $match: { status: "diterima" },
+      },
       {
         $group: {
           _id: null,
@@ -240,6 +275,7 @@ export const getRevenueExpenseChart = async (req, res) => {
             $gte: new Date(`${year}-01-01`),
             $lt: new Date(`${year + 1}-01-01`),
           },
+          status: "diterima",
         },
       },
       {

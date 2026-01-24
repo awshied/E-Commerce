@@ -4,7 +4,7 @@ import { Product } from "../models/product.model.js";
 export const getCart = async (req, res) => {
   try {
     let cart = await Cart.findOne({ user: req.user._id }).populate(
-      "items.product"
+      "items.product",
     );
 
     if (!cart) {
@@ -25,15 +25,19 @@ export const getCart = async (req, res) => {
 
 export const addToCart = async (req, res) => {
   try {
-    const { productId, quantity = 1 } = req.body;
+    const { productId, size, quantity = 1 } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ error: "Produk tidak ditemukan." });
     }
 
-    if (product.stock < quantity) {
-      return res.status(404).json({ error: "Stok sudah habis." });
+    const sizeItem = product.sizes.find((s) => s.size === size);
+
+    if (!sizeItem || sizeItem.stock < quantity) {
+      return res.status(400).json({
+        error: "Stok sudah habis.",
+      });
     }
 
     let cart = await Cart.findOne({ user: req.user._id });
@@ -47,8 +51,9 @@ export const addToCart = async (req, res) => {
     }
 
     const existingItem = cart.items.find(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId && item.size === size,
     );
+
     if (existingItem) {
       const newQuantity = existingItem.quantity + 1;
       if (product.stock < newQuantity) {
@@ -85,7 +90,7 @@ export const updateCartItem = async (req, res) => {
     }
 
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
     if (itemIndex === -1) {
       return res
@@ -122,7 +127,7 @@ export const removeFromCart = async (req, res) => {
     }
 
     cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productId
+      (item) => item.product.toString() !== productId,
     );
     await cart.save();
 

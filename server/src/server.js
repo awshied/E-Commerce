@@ -1,10 +1,9 @@
+import "dotenv/config";
 import express from "express";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
-
-dotenv.config();
 
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
@@ -16,7 +15,8 @@ import productRoutes from "./routes/product.route.js";
 import cartRoutes from "./routes/cart.route.js";
 
 const app = express();
-const __dirname = path.resolve();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
@@ -47,11 +47,22 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+const PORT = process.env.PORT || 5000;
+
 const startServer = async () => {
-  await connectDB();
-  app.listen(process.env.PORT, () => {
-    console.log("Servernya jalan kok");
-  });
+  try {
+    await connectDB();
+    const server = app.listen(PORT, () => {
+      console.log(`Servernya jalan kok di port: ${PORT}`);
+    });
+    server.on("error", (error) => {
+      console.error("Gagal untuk memulai server:", error);
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error("Gagal untuk memulai server:", error);
+    process.exit(1);
+  }
 };
 
 startServer();

@@ -43,6 +43,7 @@ const RevenueExpenseChart = () => {
     revenue: revenueExpenseData?.revenue?.[index] ?? 0,
     expense: revenueExpenseData?.expense?.[index] ?? 0,
   }));
+
   return (
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">

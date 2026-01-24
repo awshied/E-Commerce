@@ -24,7 +24,7 @@ const FloatingInput = ({
           ${
             isActive
               ? "-top-2 text-[#ffc586] text-sm"
-              : "top-1 text-[#d6d6d6] text-lg"
+              : "top-1 text-[#d6d6d6] text-base"
           }
         `}
       >

@@ -10,6 +10,10 @@ const orderItemsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  size: {
+    type: String,
+    required: true,
+  },
   price: {
     type: Number,
     required: true,
@@ -70,7 +74,7 @@ const orderSchema = new mongoose.Schema(
     },
     orderItems: [orderItemsSchema],
     shippingAddress: {
-      type: [shippingAddressSchema],
+      type: shippingAddressSchema,
       required: true,
     },
     paymentResult: {

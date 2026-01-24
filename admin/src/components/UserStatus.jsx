@@ -89,7 +89,7 @@ const UserStatus = () => {
                 <img
                   src={user.imageUrl || defaultAvatar}
                   alt={`${user.username}'s avatar`}
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-11 w-11 rounded-lg object-cover"
                 />
                 <div className="flex flex-col gap-1.5">
                   <span className="card-title text-sm font-bold">

@@ -12,7 +12,7 @@ const expenseSchema = new mongoose.Schema(
       required: true,
     },
 
-    category: {
+    expenseCategory: {
       type: String,
       enum: ["Operasional", "Air", "Gaji Karyawan", "Listrik", "Lainnya"],
       default: "Operasional",

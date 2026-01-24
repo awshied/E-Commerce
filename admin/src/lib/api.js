@@ -6,13 +6,18 @@ export const productApi = {
     return data;
   },
 
-  create: async (FormData) => {
-    const { data } = await axiosInstance.post("/admin/products", FormData);
+  create: async (formData) => {
+    const { data } = await axiosInstance.post("/admin/products", formData);
     return data;
   },
 
-  update: async ({ id, FormData }) => {
-    const { data } = await axiosInstance.put(`/admin/products/${id}`, FormData);
+  update: async ({ id, formData }) => {
+    const { data } = await axiosInstance.put(`/admin/products/${id}`, formData);
+    return data;
+  },
+
+  delete: async (productId) => {
+    const { data } = await axiosInstance.delete(`/admin/products/${productId}`);
     return data;
   },
 };
