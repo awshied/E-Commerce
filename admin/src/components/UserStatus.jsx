@@ -54,7 +54,7 @@ const UserStatus = () => {
         <div className="flex justify-between items-center">
           {/* Header */}
           <div className="flex justify-center flex-col gap-2">
-            <h2 className="card-title text-lg font-bold">Jumlah Pengguna</h2>
+            <h2 className="card-title text-lg font-bold">Pelanggan</h2>
             <span className="text-xs stat-title font-medium">
               Status keaktifan pelanggan yang tersedia.
             </span>
@@ -103,7 +103,7 @@ const UserStatus = () => {
                       aria-hidden="true"
                       className="w-3"
                     />
-                    <span className="text-base-content text-xs font-semibold">
+                    <span className="text-base-content/60 text-xs font-semibold">
                       {user.city || "Tidak Diketahui"}
                     </span>
                   </div>

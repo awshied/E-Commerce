@@ -6,6 +6,7 @@ import {
   getAllCustomers,
   getAllOrders,
   getAllProducts,
+  getCustomersWithStats,
   getDashboardStats,
   getRevenueExpenseChart,
   getUserOnlineStatus,
@@ -30,6 +31,7 @@ router.patch("/orders/:orderId/status", updateOrderStatus);
 
 // Kelola Customer
 router.get("/customers", getAllCustomers);
+router.get("/customers/stats", getCustomersWithStats);
 
 // Pantau Dashboard
 router.get("/stats", getDashboardStats);

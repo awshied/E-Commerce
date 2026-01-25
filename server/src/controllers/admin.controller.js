@@ -211,12 +211,66 @@ export const updateOrderStatus = async (req, res) => {
 // Menangkap Semua Pelanggan Yang Tersedia
 export const getAllCustomers = async (_, res) => {
   try {
-    const customers = await User.find()
+    const customers = await User.find({ role: "user" })
       .select("-password -refreshToken")
       .sort({ createdAt: -1 });
-    res.status(200).json({ customers });
+    res.status(200).json({ total: customers.length, customers });
   } catch (error) {
     console.error("Customer tidak terbaca:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menangkap Semua Stats Pelanggan
+export const getCustomersWithStats = async (_, res) => {
+  try {
+    const customers = await User.find({ role: "user" }).select(
+      "_id username email addresses createdAt",
+    );
+
+    const customerIds = customers.map((u) => u._id);
+
+    const orders = await Order.find({
+      user: { $in: customerIds },
+      status: "diterima",
+    });
+
+    const orderMap = {};
+
+    orders.forEach((order) => {
+      const uid = order.user.toString();
+
+      if (!orderMap[uid]) {
+        orderMap[uid] = {
+          totalSpent: 0,
+          lastOrder: null,
+        };
+      }
+
+      orderMap[uid].totalSpent += order.totalPrice;
+
+      if (
+        !orderMap[uid].lastOrder ||
+        order.createdAt > orderMap[uid].lastOrder.createdAt
+      ) {
+        orderMap[uid].lastOrder = order;
+      }
+    });
+
+    const result = customers.map((user) => {
+      const stats = orderMap[user._id.toString()] || {};
+
+      return {
+        ...user.toObject(),
+        totalSpent: stats.totalSpent || 0,
+        lastOrderAmount: stats.lastOrder?.totalPrice || 0,
+        lastOrderDate: stats.lastOrder?.createdAt || null,
+      };
+    });
+
+    res.status(200).json({ customers: result });
+  } catch (error) {
+    console.error("Gagal menangkap stats pelanggan:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
@@ -325,29 +379,26 @@ export const getRevenueExpenseChart = async (req, res) => {
 // Menangkap Status Keaktifan Pelanggan yang Tersedia
 export const getUserOnlineStatus = async (_, res) => {
   try {
-    const activeLimit = 60 * 1000;
-
-    const users = await User.find().select(
-      "username imageUrl addresses lastActive",
-    );
+    const customers = await User.find({ role: "user" })
+      .select("-password -refreshToken")
+      .sort({ lastActive: -1 });
 
     const now = new Date();
 
-    const formattedUsers = users.map((user) => {
-      const defaultAddress = user.addresses?.find((addr) => addr.isDefault);
+    const ONLINE_THRESHOLD = 60 * 1000;
 
-      return {
-        _id: user._id,
-        username: user.username,
-        imageUrl: user.imageUrl,
-        city: defaultAddress?.city || null,
-        lastActive: user.lastActive,
-        isOnline: now - new Date(user.lastActive) <= activeLimit,
-      };
+    const onlineUsers = [];
+    const offlineUsers = [];
+
+    customers.forEach((user) => {
+      const diff = now - new Date(user.lastActive);
+
+      if (diff <= ONLINE_THRESHOLD) {
+        onlineUsers.push(user);
+      } else {
+        offlineUsers.push(user);
+      }
     });
-
-    const onlineUsers = formattedUsers.filter((u) => u.isOnline);
-    const offlineUsers = formattedUsers.filter((u) => !u.isOnline);
 
     res.status(200).json({
       totalOnline: onlineUsers.length,
@@ -356,7 +407,7 @@ export const getUserOnlineStatus = async (_, res) => {
       offlineUsers,
     });
   } catch (error) {
-    console.error("Status customer tidak terbaca:", error);
+    console.error("Gagal mengambil status user:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

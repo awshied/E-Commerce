@@ -1,9 +1,11 @@
 import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { customerApi } from "../lib/api";
 
+import { customerApi } from "../lib/api";
 import customerManagement from "../assets/icons/customer-management.png";
 import { formatDate } from "../lib/statusBadge";
+import { nominal } from "../lib/nominal";
+import defaultAvatar from "../assets/avatar.png";
 
 const CustomersPage = () => {
   const { data: customerData, isLoading: customerLoading } = useQuery({
@@ -46,42 +48,50 @@ const CustomersPage = () => {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Pelanggan</th>
-                    <th>Email</th>
+                    <th>Nama Pelanggan</th>
+                    <th>Bergabung Pada</th>
                     <th>Alamat</th>
                     <th>Wishlist</th>
-                    <th>Bergabung Pada</th>
+                    <th>Total Belanjaan</th>
+                    <th>Pesanan Terakhir</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {customers.map((customer) => (
                     <tr key={customer._id}>
-                      <td className="flex items-center gap-3">
-                        <div className="avatar placeholder">
-                          <div className="bg-secondary text-secondary-content rounded-full w-12">
-                            {customer.imageUrl ? (
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar placeholder">
+                            <div className="bg-secondary text-secondary-content rounded-full w-12">
                               <img
-                                src={customer.imageUrl}
+                                src={customer.imageUrl || defaultAvatar}
                                 alt={customer.username}
                                 className="w-12 h-12 rounded-full"
                               />
-                            ) : (
-                              <span className="text-lg">
-                                {customer.username?.charAt(0).toUpperCase()}
-                              </span>
-                            )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="font-bold text-base">
+                              {customer.username}
+                            </span>
+                            <span className="font-medium text-sm text-base-content/60">
+                              {customer.email}
+                            </span>
                           </div>
                         </div>
-                        <div className="font-semibold">{customer.username}</div>
                       </td>
 
-                      <td>{customer.email}</td>
+                      <td>
+                        <span className="text-sm font-medium">
+                          {formatDate(customer.createdAt)}
+                        </span>
+                      </td>
 
                       <td>
                         {customer.addresses?.city ||
                         customer.addresses?.province ? (
-                          <div className="badge badge-ghost">
+                          <div className="text-sm font-medium">
                             {[
                               customer.addresses?.city,
                               customer.addresses?.province,
@@ -90,19 +100,29 @@ const CustomersPage = () => {
                               .join(", ")}
                           </div>
                         ) : (
-                          <span className="text-sm opacity-60">-</span>
+                          <span className="text-sm font-medium">-</span>
                         )}
                       </td>
                       <td>
-                        <div className="badge badge-ghost">
+                        <div className="text-sm font-medium">
                           {customer.wishlist?.length || 0} produk
                         </div>
                       </td>
 
                       <td>
-                        <span className="text-sm opacity-60">
-                          {formatDate(customer.createdAt)}
-                        </span>
+                        <div className="text-sm font-medium">
+                          {customer.totalSpent != null
+                            ? `Rp. ${nominal(customer.totalSpent)}`
+                            : "-"}
+                        </div>
+                      </td>
+
+                      <td>
+                        <div className="text-sm font-medium">
+                          {customer.lastOrderAmount != null
+                            ? `Rp. ${nominal(customer.lastOrderAmount)}`
+                            : "-"}
+                        </div>
                       </td>
                     </tr>
                   ))}
