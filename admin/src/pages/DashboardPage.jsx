@@ -57,6 +57,7 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-3">
+      {/* Header */}
       <div className="breadcrumbs text-sm mb-3">
         <ul className="px-3">
           <li>
@@ -114,7 +115,7 @@ const DashboardPage = () => {
                     <th>ID Pesanan</th>
                     <th>Pelanggan</th>
                     <th>Item</th>
-                    <th>Jumlah</th>
+                    <th>Jumlah Harga</th>
                     <th>Status</th>
                     <th>Tanggal</th>
                   </tr>
@@ -139,14 +140,15 @@ const DashboardPage = () => {
                       </td>
                       <td>
                         <div className="text-sm">
-                          {order.orderItems[0]?.name}
-                          {order.orderItems.length > 1 &&
-                            `+${order.orderItems.length - 1} more`}
+                          {order.orderItems[0]?.name || "N/A"}
+                          {(order.orderItems?.length || 0) > 1 &&
+                            ` +${order.orderItems.length - 1} lainnya`}
                         </div>
                       </td>
                       <td>
                         <span className="font-semibold">
-                          Rp. {order.totalPrice.toLocaleString("id-ID")}
+                          Rp.{" "}
+                          {(order.totalPrice || 0).toLocaleString("id-ID")}{" "}
                         </span>
                       </td>
                       <td>
