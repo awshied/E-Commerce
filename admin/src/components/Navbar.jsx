@@ -1,12 +1,14 @@
 import { Menu, Pencil } from "lucide-react";
 import { useLocation } from "react-router";
-import { useAuthStore } from "../store/useAuthStore";
 import { useRef, useState } from "react";
 
+import { useAuthStore } from "../store/useAuthStore";
 import dashboard from "../assets/icons/dashboard.png";
 import product from "../assets/icons/product-management.png";
 import customer from "../assets/icons/customer-management.png";
 import order from "../assets/icons/order-management.png";
+import notification from "../assets/icons/notification.png";
+import comment from "../assets/icons/comment.png";
 
 export const navigationBar = [
   {
@@ -75,36 +77,48 @@ const Navbar = () => {
         </h1>
       </div>
 
-      <div className="mr-5 flex items-center gap-3">
-        <div className="flex flex-col items-end justify-center py-2">
-          <small className="text-xs font-medium text-base-content">
-            Selamat Datang,
-          </small>
-          <span className="text-lg font-bold text-secondary truncate">
-            {authUser?.username}
-          </span>
-        </div>
-        <div className="avatar">
-          <button
-            className="size-12 rounded-full overflow-hidden relative group cursor-pointer"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <img
-              src={selectedImg || authUser.imageUrl || "/src/assets/avatar.png"}
-              alt="Admin Image"
-              className="size-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-              <Pencil className="size-5" />
-            </div>
+      <div className="mr-5 flex gap-8">
+        <div className="card-actions items-center gap-3">
+          <button className="btn btn-square btn-ghost">
+            <img src={comment} alt={comment} className="size-6" />
           </button>
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            className="hidden"
-          />
+          <button className="btn btn-square btn-ghost">
+            <img src={notification} alt={notification} className="size-6" />
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end justify-center py-2">
+            <small className="text-xs font-medium text-base-content">
+              Selamat Datang,
+            </small>
+            <span className="text-lg font-bold text-secondary truncate">
+              {authUser?.username}
+            </span>
+          </div>
+          <div className="avatar">
+            <button
+              className="size-12 rounded-full overflow-hidden relative group cursor-pointer"
+              onClick={() => fileInputRef.current.click()}
+            >
+              <img
+                src={
+                  selectedImg || authUser.imageUrl || "/src/assets/avatar.png"
+                }
+                alt="Admin Image"
+                className="size-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <Pencil className="size-5" />
+              </div>
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
         </div>
       </div>
     </div>
