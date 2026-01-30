@@ -20,6 +20,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
+
+      if (!res.data?.id) {
+        throw new Error("Tidak bisa cek autentikasi.");
+      }
+
       set({ user: res.data });
     } catch {
       set({ user: null });
@@ -28,33 +33,54 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  login: async (data) => {
-    const res = await axiosInstance.post("/auth/login", data);
-
-    await saveToken(res.data.accessToken);
-
-    set({ user: res.data.user });
-  },
-
   register: async (data) => {
-    const res = await axiosInstance.post("/auth/register", data);
+    try {
+      const res = await axiosInstance.post("/auth/register", data);
 
-    await saveToken(res.data.accessToken);
+      const { accessToken, user } = res.data;
 
-    set({ user: res.data.user });
+      if (!accessToken || !user) {
+        throw new Error("Tidak bisa registrasi.");
+      }
+
+      await saveToken(accessToken);
+      set({ user });
+    } catch (error) {
+      await removeToken();
+      set({ user: null });
+      throw error;
+    }
   },
 
+  login: async (data) => {
+    try {
+      const res = await axiosInstance.post("/auth/login", data);
+
+      const { accessToken, user } = res.data;
+
+      if (!accessToken || !user) {
+        throw new Error("Tidak bisa login.");
+      }
+
+      await saveToken(accessToken);
+      set({ user });
+    } catch (error) {
+      await removeToken();
+      set({ user: null });
+      throw error;
+    }
+  },
   logout: async () => {
-    await removeToken();
-    set({ user: null });
+    try {
+      await axiosInstance.post("/auth/logout");
+    } finally {
+      await removeToken();
+      set({ user: null });
+    }
   },
 
   updateProfile: async (data) => {
-    try {
-      const res = await axiosInstance.put("/auth/update-profile", data);
-      set({ user: res.data });
-    } catch {
-      set({ user: null });
-    }
+    const res = await axiosInstance.put("/auth/update-profile", data);
+    set({ user: res.data });
   },
 }));

@@ -6,6 +6,10 @@ const cartItemSchema = new mongoose.Schema({
     ref: "Product",
     required: true,
   },
+  size: {
+    type: String,
+    required: true,
+  },
   quantity: {
     type: Number,
     required: true,
@@ -25,7 +29,7 @@ const cartSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const Cart = mongoose.model("Cart", cartSchema);

@@ -4,6 +4,10 @@ import { getToken } from "./secureStore";
 
 const API_URL = Constants.expoConfig?.extra?.API_URL;
 
+if (!API_URL) {
+  throw new Error("URL tidak terkonfigurasi pada expo.");
+}
+
 export const axiosInstance = axios.create({
   baseURL: API_URL,
   timeout: 10000,

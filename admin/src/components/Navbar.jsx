@@ -7,6 +7,7 @@ import dashboard from "../assets/icons/dashboard.png";
 import product from "../assets/icons/product-management.png";
 import customer from "../assets/icons/customer-management.png";
 import order from "../assets/icons/order-management.png";
+import avatar from "../assets/avatar.png";
 import notification from "../assets/icons/notification.png";
 import comment from "../assets/icons/comment.png";
 
@@ -80,10 +81,10 @@ const Navbar = () => {
       <div className="mr-5 flex gap-8">
         <div className="card-actions items-center gap-3">
           <button className="btn btn-square btn-ghost">
-            <img src={comment} alt={comment} className="size-6" />
+            <img src={comment} alt="Comments" className="size-6" />
           </button>
           <button className="btn btn-square btn-ghost">
-            <img src={notification} alt={notification} className="size-6" />
+            <img src={notification} alt="Notifications" className="size-6" />
           </button>
         </div>
         <div className="flex items-center gap-3">
@@ -101,9 +102,7 @@ const Navbar = () => {
               onClick={() => fileInputRef.current.click()}
             >
               <img
-                src={
-                  selectedImg || authUser.imageUrl || "/src/assets/avatar.png"
-                }
+                src={selectedImg || authUser?.imageUrl || avatar}
                 alt="Admin Image"
                 className="size-full object-cover"
               />

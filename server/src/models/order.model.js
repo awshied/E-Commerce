@@ -10,14 +10,14 @@ const orderItemsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  size: {
-    type: String,
-    required: true,
-  },
   price: {
     type: Number,
     required: true,
     min: 0,
+  },
+  size: {
+    type: String,
+    required: true,
   },
   quantity: {
     type: Number,

@@ -15,11 +15,13 @@ export default function RootLayout() {
     checkAuth();
   }, []);
 
-  if (isLoading) return <PageLoader />;
-
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      {isLoading ? (
+        <PageLoader />
+      ) : (
+        <Stack screenOptions={{ headerShown: false }} />
+      )}
     </QueryClientProvider>
   );
 }
