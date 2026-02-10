@@ -1,9 +1,11 @@
 import { create } from "zustand";
+
 import { axiosInstance } from "../lib/axios";
 import { saveToken, removeToken } from "../lib/secureStore";
+import { User } from "@/types";
 
 interface AuthState {
-  user: any;
+  user: User | null;
   isLoading: boolean;
 
   checkAuth: () => Promise<void>;
@@ -21,7 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await axiosInstance.get("/auth/check");
 
-      if (!res.data?.id) {
+      if (!res.data?._id) {
         throw new Error("Tidak bisa cek autentikasi.");
       }
 
@@ -34,22 +36,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (data) => {
-    try {
-      const res = await axiosInstance.post("/auth/register", data);
-
-      const { accessToken, user } = res.data;
-
-      if (!accessToken || !user) {
-        throw new Error("Tidak bisa registrasi.");
-      }
-
-      await saveToken(accessToken);
-      set({ user });
-    } catch (error) {
-      await removeToken();
-      set({ user: null });
-      throw error;
-    }
+    await axiosInstance.post(
+      "/auth/register",
+      {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      },
+      {
+        headers: {
+          Authorization: undefined,
+        },
+      },
+    );
   },
 
   login: async (data) => {
@@ -64,6 +63,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       await saveToken(accessToken);
       set({ user });
+
+      console.log("USER SET:", user);
     } catch (error) {
       await removeToken();
       set({ user: null });

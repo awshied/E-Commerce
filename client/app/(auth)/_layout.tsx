@@ -5,7 +5,7 @@ export default function AuthLayout() {
   const { user } = useAuthStore();
 
   if (user) {
-    return <Redirect href="/" />;
+    return <Redirect href={"/(tabs)"} />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

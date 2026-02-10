@@ -25,36 +25,31 @@ export const register = async (req, res) => {
         .json({ message: "Duh, emailnya tidak valid nih." });
     }
 
-    const user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: "Email ini sudah ada." });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email ini sudah terdaftar." });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
+    await User.create({
       username,
       email,
       password: hashedPassword,
     });
 
-    if (newUser) {
-      const savedUser = await newUser.save();
-      generateToken(savedUser._id, res);
-
-      res.status(201).json({
-        _id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role,
-        imageUrl: newUser.imageUrl,
-        addresses: newUser.addresses,
-        wishlist: newUser.wishlist,
-        lastActive: newUser.lastActive,
-      });
-    } else {
-      res.status(400).json({ message: "Datamu ga valid, coba lagi!" });
-    }
+    return res.status(201).json({
+      message:
+        "Registrasi berhasil. Anda dapat segera login untuk menjelajahi GlacioCore.",
+    });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "Username atau email sudah digunakan.",
+      });
+    }
+
     console.error("Error di controller registrasi:", error);
     res.status(500).json({ message: "Server internal error." });
   }
@@ -67,28 +62,34 @@ export const login = async (req, res) => {
   if (!email || !password) {
     return res
       .status(400)
-      .json({ message: "Email dan password jangan kosong." });
+      .json({ message: "Email dan kata sandi tidak boleh kosong." });
   }
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Akun tidak ada." });
+    if (!user)
+      return res.status(400).json({ message: "Email atau kata sandi salah." });
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect)
-      return res.status(400).json({ message: "Akun tidak ada." });
+      return res.status(400).json({ message: "Email atau kata sandi salah." });
 
-    generateToken(user._id, res);
+    const accessToken = generateToken(user._id);
 
     res.status(200).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      imageUrl: user.imageUrl,
-      addresses: user.addresses,
-      wishlist: user.wishlist,
-      lastActive: user.lastActive,
+      accessToken,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        imageUrl: user.imageUrl,
+        addresses: user.addresses,
+        wishlist: user.wishlist,
+        lastActive: user.lastActive,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Error di controller login:", error);
@@ -141,6 +142,10 @@ export const updateProfile = async (req, res) => {
       { imageUrl: uploadResponse.secure_url },
       { new: true },
     ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Pengguna tidak ditemukan." });
+    }
 
     res.status(200).json(updatedUser);
   } catch (error) {

@@ -1,15 +1,14 @@
 import axios from "axios";
-import Constants from "expo-constants";
 import { getToken } from "./secureStore";
+import { Platform } from "react-native";
 
-const API_URL = Constants.expoConfig?.extra?.API_URL;
-
-if (!API_URL) {
-  throw new Error("URL tidak terkonfigurasi pada expo.");
-}
+const BASE_URL =
+  Platform.OS === "android"
+    ? "http://192.168.1.2:3000/api"
+    : "http://localhost:3000/api";
 
 export const axiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: BASE_URL,
   timeout: 10000,
 });
 
