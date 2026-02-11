@@ -17,11 +17,19 @@ export const protectRoute = async (req, res, next) => {
       return res.status(401).json({ message: "Token tidak valid." });
 
     const user = await User.findById(decoded.userId).select("-password");
-    if (!user) return res.status(404).json({ message: "Pengguna tidak ada." });
+    if (!user) return res.status(401).json({ message: "Pengguna tidak ada." });
 
     req.user = user;
     next();
   } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Token tidak valid." });
+    }
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token sudah kadaluarsa." });
+    }
+
     console.error("Ada kesalahan di middleware protectRoute:", error);
     res.status(500).json({ message: "Server internal error." });
   }

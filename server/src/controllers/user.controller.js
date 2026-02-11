@@ -203,11 +203,12 @@ export const removeFromWishlist = async (req, res) => {
 
 export const pingUser = async (req, res) => {
   try {
-    const userId = req.user._id;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-    await User.findByIdAndUpdate(userId, {
-      lastActive: new Date(),
-    });
+    req.user.lastActive = new Date();
+    await req.user.save();
 
     res.status(200).json({ success: true });
   } catch (error) {

@@ -7,9 +7,9 @@ const useUserPing = () => {
       statsApi.ping().catch(() => {});
     };
 
-    ping(); // ping awal
+    ping();
 
-    const interval = setInterval(ping, 15000); // 15 detik
+    const interval = setInterval(ping, 15000);
 
     return () => clearInterval(interval);
   }, []);

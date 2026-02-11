@@ -99,7 +99,6 @@ export const login = async (req, res) => {
 
 // Keluar Dari Aplikasi
 export const logout = async (_, res) => {
-  res.cookie("jwt", "", { maxAge: 0 });
   res.status(200).json({ message: "Anda baru saja logout." });
 };
 

@@ -23,12 +23,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await axiosInstance.get("/auth/check");
 
-      if (!res.data?._id) {
-        throw new Error("Tidak bisa cek autentikasi.");
-      }
-
       set({ user: res.data });
     } catch {
+      await removeToken();
       set({ user: null });
     } finally {
       set({ isLoading: false });
@@ -36,19 +33,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (data) => {
-    await axiosInstance.post(
-      "/auth/register",
-      {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-      },
-      {
-        headers: {
-          Authorization: undefined,
-        },
-      },
-    );
+    await axiosInstance.post("/auth/register", {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+    });
   },
 
   login: async (data) => {
@@ -63,21 +52,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       await saveToken(accessToken);
       set({ user });
-
-      console.log("USER SET:", user);
     } catch (error) {
       await removeToken();
       set({ user: null });
       throw error;
     }
   },
+
   logout: async () => {
-    try {
-      await axiosInstance.post("/auth/logout");
-    } finally {
-      await removeToken();
-      set({ user: null });
-    }
+    await removeToken();
+    set({ user: null });
   },
 
   updateProfile: async (data) => {

@@ -1,6 +1,7 @@
 import axios from "axios";
-import { getToken } from "./secureStore";
+import { getToken, removeToken } from "./secureStore";
 import { Platform } from "react-native";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const BASE_URL =
   Platform.OS === "android"
@@ -23,4 +24,15 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error),
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await removeToken();
+      useAuthStore.getState().user = null;
+    }
+    return Promise.reject(error);
+  },
 );

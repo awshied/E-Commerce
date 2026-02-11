@@ -1,11 +1,12 @@
-import { View, Text } from "react-native";
+import { Text } from "react-native";
 import React from "react";
+import SafeScreen from "@/components/SafeScreen";
 
 const CartScreen = () => {
   return (
-    <View>
-      <Text>CartScreen</Text>
-    </View>
+    <SafeScreen>
+      <Text className="text-white">CartScreen</Text>
+    </SafeScreen>
   );
 };
 

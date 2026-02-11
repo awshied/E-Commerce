@@ -385,7 +385,7 @@ export const getUserOnlineStatus = async (_, res) => {
 
     const now = new Date();
 
-    const ONLINE_THRESHOLD = 60 * 1000;
+    const ONLINE_THRESHOLD = 30 * 1000;
 
     const onlineUsers = [];
     const offlineUsers = [];

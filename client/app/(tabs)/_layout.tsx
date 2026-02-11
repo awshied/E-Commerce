@@ -19,14 +19,10 @@ const TabsLayout = () => {
         tabBarActiveTintColor: "#ffffff",
         tabBarInactiveTintColor: "#d2d2d2",
         tabBarStyle: {
-          position: "absolute",
-          backgroundColor: "#0f172a",
+          backgroundColor: "#0a1120",
+          height: 56 + insets.bottom,
           borderTopWidth: 0,
-          height: 32 + insets.bottom,
-          marginHorizontal: 20,
           paddingTop: 4,
-          marginBottom: insets.bottom,
-          borderRadius: 24,
           overflow: "hidden",
         },
         tabBarLabelStyle: {

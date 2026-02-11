@@ -14,11 +14,11 @@ import DashboardLayout from "./layouts/DashboardLayout";
 
 const App = () => {
   useUserPing();
-  const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
+  const { isCheckingAuth, authUser } = useAuthStore();
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    useAuthStore.getState().checkAuth();
+  }, []);
 
   if (isCheckingAuth) return <PageLoader />;
 

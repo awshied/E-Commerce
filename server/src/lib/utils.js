@@ -5,5 +5,5 @@ export const generateToken = (userId) => {
   if (!JWT_SECRET) {
     throw new Error("JWT_SECRET tidak terkonfigurasi.");
   }
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
 };
