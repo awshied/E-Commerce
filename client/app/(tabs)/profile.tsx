@@ -7,20 +7,21 @@ const ProfileScreen = () => {
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
-    try {
-      Alert.alert("Konfirmasi", "Apakah Anda yakin ingin logout?", [
-        { text: "Batal", style: "cancel" },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
+    Alert.alert("Konfirmasi", "Apakah Anda yakin ingin logout?", [
+      { text: "Batal", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
             await logout();
-          },
+          } catch (error) {
+            console.error("Logout failed", error);
+            Alert.alert("Error", "Logout gagal. Silakan coba lagi.");
+          }
         },
-      ]);
-    } catch (error) {
-      console.log("Anda tidak bisa keluar", error);
-    }
+      },
+    ]);
   };
   return (
     <SafeScreen>

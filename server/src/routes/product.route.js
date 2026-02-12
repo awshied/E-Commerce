@@ -1,14 +1,16 @@
 import { Router } from "express";
 import { protectRoute } from "../middlewares/auth.middleware.js";
-import { getAllProducts } from "../controllers/admin.controller.js";
-import { getProductById } from "../controllers/product.controller.js";
+import {
+  getAllProductsPublic,
+  getProductById,
+} from "../controllers/product.controller.js";
 
 const router = Router();
 
 router.use(protectRoute);
 
 // Lihat - Lihat Produk
-router.get("/", getAllProducts);
+router.get("/", getAllProductsPublic);
 router.get("/:id", getProductById);
 
 export default router;

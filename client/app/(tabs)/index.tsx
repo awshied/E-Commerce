@@ -1,9 +1,20 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  TextInput,
+} from "react-native";
+import React, { useState } from "react";
 import SafeScreen from "@/components/SafeScreen";
-import { Image } from "react-native";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const HomeScreen = () => {
+  const { user } = useAuthStore();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
   return (
     <SafeScreen>
       <ScrollView
@@ -19,7 +30,7 @@ const HomeScreen = () => {
                 Selamat Datang,
               </Text>
               <Text className="text-primary-purple text-base font-extrabold tracking-tight mt-1">
-                Aryo Wibisono
+                {user?.username?.split(" ")[0]}
               </Text>
             </View>
 
@@ -29,6 +40,20 @@ const HomeScreen = () => {
                 className="size-7"
               />
             </TouchableOpacity>
+          </View>
+
+          <View className="bg-surface flex-row items-center px-5 py-4 rounded-2xl">
+            <Image
+              source={require("../../assets/images/icons/search.png")}
+              className="size-6"
+            />
+            <TextInput
+              placeholder="Cari..."
+              placeholderTextColor={"#d6d6d6"}
+              className="flex-1 ml-3 text-base text-text-primary"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
         </View>
       </ScrollView>

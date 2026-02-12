@@ -1,5 +1,6 @@
 import { axiosInstance } from "./axios";
 
+// Produk
 export const productApi = {
   getAll: async () => {
     const { data } = await axiosInstance.get("/admin/products");
@@ -22,6 +23,30 @@ export const productApi = {
   },
 };
 
+// Kategori
+export const categoryApi = {
+  getAll: async () => {
+    const { data } = await axiosInstance.get("/admin/categories");
+    return data;
+  },
+};
+
+// Tipe
+export const typeApi = {
+  getAll: async () => {
+    const { data } = await axiosInstance.get("/admin/types");
+    return data;
+  },
+
+  getByCategory: async (categoryId) => {
+    const { data } = await axiosInstance.get(
+      `/admin/types?category=${categoryId}`,
+    );
+    return data;
+  },
+};
+
+// Pesanan
 export const orderApi = {
   getAll: async () => {
     const { data } = await axiosInstance.get("/admin/orders");
@@ -37,6 +62,7 @@ export const orderApi = {
   },
 };
 
+// Statistik
 export const statsApi = {
   getDashboard: async () => {
     const { data } = await axiosInstance.get("/admin/stats");
@@ -54,6 +80,7 @@ export const statsApi = {
   },
 };
 
+// Chart
 export const chartApi = {
   getRevenueAndExpense: async (year) => {
     const { data } = await axiosInstance.get(
@@ -63,6 +90,7 @@ export const chartApi = {
   },
 };
 
+// Pelanggan
 export const customerApi = {
   getAll: async () => {
     const { data } = await axiosInstance.get("/admin/customers");

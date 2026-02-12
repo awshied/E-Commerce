@@ -1,5 +1,41 @@
 import mongoose from "mongoose";
 
+const sizeSchema = new mongoose.Schema({
+  size: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0,
+  },
+});
+
+const promoSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  discountPercent: {
+    type: Number,
+    min: 0,
+    max: 100,
+  },
+  startDate: {
+    type: Date,
+  },
+  endDate: {
+    type: Date,
+  },
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -10,39 +46,35 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
     category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Type",
+    },
+    gender: {
       type: String,
+      enum: ["Campuran", "Pria", "Wanita", "Anak-anak"],
+      default: "Campuran",
       required: true,
     },
-    types: {
-      type: String,
-      required: true,
-    },
-    sizes: [
-      {
-        size: {
-          type: String,
-          required: true,
-        },
-        stock: {
-          type: Number,
-          required: true,
-          min: 0,
-          default: 0,
-        },
-      },
-    ],
+    sizes: [sizeSchema],
     images: [
       {
         type: String,
         required: true,
       },
     ],
+    newLabel: {
+      type: Boolean,
+      default: true,
+    },
+    newUntil: {
+      type: Date,
+    },
+    promo: promoSchema,
     averageRating: {
       type: Number,
       min: 0,
@@ -58,5 +90,13 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+productSchema.pre("save", function (next) {
+  if (this.newLabel && !this.newUntil) {
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    this.newUntil = new Date(Date.now() + sevenDays);
+  }
+  next();
+});
 
 export const Product = mongoose.model("Product", productSchema);

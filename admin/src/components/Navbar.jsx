@@ -4,7 +4,10 @@ import { useRef, useState } from "react";
 
 import { useAuthStore } from "../store/useAuthStore";
 import dashboard from "../assets/icons/dashboard.png";
+import management from "../assets/icons/management.png";
 import product from "../assets/icons/product-management.png";
+import category from "../assets/icons/category.png";
+import type from "../assets/icons/type.png";
 import customer from "../assets/icons/customer-management.png";
 import order from "../assets/icons/order-management.png";
 import avatar from "../assets/avatar.png";
@@ -18,9 +21,26 @@ export const navigationBar = [
     icon: dashboard,
   },
   {
-    name: "Produk",
-    path: "/products",
-    icon: product,
+    name: "Kelola",
+    icon: management,
+    hasChildren: true,
+    children: [
+      {
+        name: "Produk",
+        path: "/products",
+        icon: product,
+      },
+      {
+        name: "Kategori",
+        path: "/categories",
+        icon: category,
+      },
+      {
+        name: "Tipe",
+        path: "/types",
+        icon: type,
+      },
+    ],
   },
   {
     name: "Pelanggan",

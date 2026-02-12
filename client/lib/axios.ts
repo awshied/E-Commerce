@@ -31,7 +31,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await removeToken();
-      useAuthStore.getState().user = null;
+      useAuthStore.setState({ user: null });
     }
     return Promise.reject(error);
   },

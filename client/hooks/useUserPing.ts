@@ -9,7 +9,7 @@ const useUserPing = (enabled: boolean) => {
       try {
         await statsApi.ping();
       } catch (error) {
-        console.log(error);
+        console.error("Ping user gagal:", error);
       }
     };
 

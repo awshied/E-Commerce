@@ -6,6 +6,8 @@ import useUserPing from "./hooks/useUserPing";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProductsPage from "./pages/ProductsPage";
+import CategoriesPage from "./pages/CategoriesPage";
+import TypesPage from "./pages/TypesPage";
 import OrdersPage from "./pages/OrdersPage";
 import CustomersPage from "./pages/CustomersPage";
 import { useAuthStore } from "./store/useAuthStore";
@@ -36,6 +38,8 @@ const App = () => {
           <Route index element={<Navigate to={"/dashboard"} />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductsPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="types" element={<TypesPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="orders" element={<OrdersPage />} />
         </Route>

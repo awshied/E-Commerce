@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, XIcon } from "lucide-react";
 
-import { productApi } from "../lib/api";
+import { productApi, categoryApi, typeApi } from "../lib/api";
 import { getStockStatusBadge, getTotalStock } from "../lib/statusBadge";
 import productManagement from "../assets/icons/product-management.png";
 import productEdit from "../assets/icons/product-edit.png";
@@ -23,10 +23,16 @@ const ProductsPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     category: "",
-    types: "",
-    price: "",
+    type: "",
+    gender: "Campuran",
     description: "",
-    sizes: [{ size: "", stock: "" }],
+    sizes: [{ size: "", price: "", stock: "" }],
+    promo: {
+      title: "",
+      discountPercent: "",
+      startDate: "",
+      endDate: "",
+    },
   });
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -36,6 +42,17 @@ const ProductsPage = () => {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: productApi.getAll,
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: categoryApi.getAll,
+  });
+
+  const { data: types = [] } = useQuery({
+    queryKey: ["types", formData.category],
+    queryFn: () => typeApi.getByCategory(formData.category),
+    enabled: !!formData.category,
   });
 
   const createProductMutation = useMutation({
@@ -73,10 +90,16 @@ const ProductsPage = () => {
     setFormData({
       name: "",
       category: "",
-      types: "",
-      price: "",
+      type: "",
+      gender: "Campuran",
       description: "",
-      sizes: [{ size: "", stock: "" }],
+      sizes: [{ size: "", price: "", stock: "" }],
+      promo: {
+        title: "",
+        discountPercent: "",
+        startDate: "",
+        endDate: "",
+      },
     });
     setImages([]);
     setImagePreviews([]);
@@ -86,14 +109,21 @@ const ProductsPage = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      category: product.category,
-      types: product.types,
-      price: product.price.toString(),
+      category: product.category?._id,
+      type: product.type?._id,
+      gender: product.gender,
       description: product.description,
       sizes: product.sizes.map((s) => ({
         size: s.size,
+        price: s.price.toString(),
         stock: s.stock.toString(),
       })),
+      promo: product.promo || {
+        title: "",
+        discountPercent: "",
+        startDate: "",
+        endDate: "",
+      },
     });
     setImagePreviews(product.images);
     setShowModal(true);
@@ -125,12 +155,35 @@ const ProductsPage = () => {
     }
 
     const formDataToSend = new FormData();
+
     formDataToSend.append("name", formData.name);
     formDataToSend.append("category", formData.category);
-    formDataToSend.append("types", formData.types);
-    formDataToSend.append("price", formData.price);
+    formDataToSend.append("type", formData.type);
+    formDataToSend.append("gender", formData.gender);
     formDataToSend.append("description", formData.description);
-    formDataToSend.append("sizes", JSON.stringify(formData.sizes));
+
+    formDataToSend.append(
+      "sizes",
+      JSON.stringify(
+        formData.sizes.map((s) => ({
+          size: s.size,
+          price: Number(s.price),
+          stock: Number(s.stock),
+        })),
+      ),
+    );
+
+    if (formData.promo.title) {
+      formDataToSend.append(
+        "promo",
+        JSON.stringify({
+          title: formData.promo.title,
+          discountPercent: Number(formData.promo.discountPercent),
+          startDate: formData.promo.startDate,
+          endDate: formData.promo.endDate,
+        }),
+      );
+    }
 
     if (images.length > 0)
       images.forEach((image) => formDataToSend.append("images", image));
@@ -219,7 +272,7 @@ const ProductsPage = () => {
                             className="w-4 h-4"
                           />
                           <p className="text-base-content text-sm font-semibold">
-                            {product.category}
+                            {product.category?.name}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -229,7 +282,7 @@ const ProductsPage = () => {
                             className="w-4 h-4"
                           />
                           <p className="text-base-content text-sm font-semibold">
-                            {product.types}
+                            {product.type?.name}
                           </p>
                         </div>
                         <div className={`badge ${status.class} font-semibold`}>
@@ -242,7 +295,12 @@ const ProductsPage = () => {
                             Harga
                           </p>
                           <p className="text-lg font-bold">
-                            Rp. {product.price.toLocaleString("id-ID")}
+                            Rp.{" "}
+                            {Math.min(
+                              ...product.sizes.map(
+                                (s) => s.finalPrice || s.price,
+                              ),
+                            ).toLocaleString("id-ID")}
                           </p>
                         </div>
                         <div className="flex flex-col gap-1">
@@ -313,7 +371,7 @@ const ProductsPage = () => {
         readOnly
       />
       <div className="modal">
-        <div className="modal-box max-w-2xl">
+        <div className="modal-box max-w-400">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-2xl">
               {editingProduct ? "Ubah Produk" : "Tambah Produk Baru"}
@@ -327,159 +385,191 @@ const ProductsPage = () => {
           </div>
           <hr className="w-full border border-neutral my-4" />
           <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="form-control">
-                <FloatingInput
-                  label="Nama"
-                  name="name"
-                  type="text"
-                  icon={productName}
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="form-control">
-                <FloatingInput
-                  label="Harga (Rp)"
-                  name="price"
-                  type="number"
-                  icon={productPrice}
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="form-control">
-                <FloatingInput
-                  label="Kategori"
-                  name="category"
-                  type="text"
-                  icon={productCategory}
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="form-control">
-                <FloatingInput
-                  label="Tipe"
-                  name="types"
-                  type="text"
-                  icon={productType}
-                  value={formData.types}
-                  onChange={(e) =>
-                    setFormData({ ...formData, types: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-            {formData.sizes.map((item, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-[120px_1fr_40px] gap-6 items-center"
-              >
-                <div className="form-control">
-                  <FloatingInput
-                    label="Ukuran"
-                    name="size"
-                    type="text"
-                    icon={productSize}
-                    value={item.size}
-                    onChange={(e) =>
-                      handleSizeChange(index, "size", e.target.value)
-                    }
-                  />
+            <div className="grid grid-cols-2 gap-12">
+              <div className="space-y-6 mt-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <FloatingInput
+                      label="Nama"
+                      name="name"
+                      type="text"
+                      icon={productName}
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="form-control">
+                    <select
+                      className="select select-bordered"
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          category: e.target.value,
+                          type: "",
+                        })
+                      }
+                      required
+                    >
+                      <option value="">Pilih Kategori</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="form-control">
-                  <FloatingInput
-                    label="Stok"
-                    name="stock"
-                    type="number"
-                    icon={productStock}
-                    value={item.stock}
-                    onChange={(e) =>
-                      handleSizeChange(index, "stock", e.target.value)
-                    }
-                  />
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <select
+                      className="select select-bordered"
+                      value={formData.type}
+                      onChange={(e) =>
+                        setFormData({ ...formData, type: e.target.value })
+                      }
+                      required
+                      disabled={!formData.category}
+                    >
+                      <option value="">Pilih Tipe</option>
+                      {types.map((t) => (
+                        <option key={t._id} value={t._id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-control">
+                    <select
+                      className="select select-bordered"
+                      value={formData.gender}
+                      onChange={(e) =>
+                        setFormData({ ...formData, gender: e.target.value })
+                      }
+                    >
+                      <option value="Campuran">Campuran</option>
+                      <option value="Pria">Pria</option>
+                      <option value="Wanita">Wanita</option>
+                      <option value="Anak-anak">Anak-anak</option>
+                    </select>
+                  </div>
                 </div>
+                {formData.sizes.map((item, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-[100px_1fr_1fr_40px] gap-4 items-center"
+                  >
+                    <div className="form-control">
+                      <FloatingInput
+                        label="Ukuran"
+                        name="size"
+                        type="text"
+                        icon={productSize}
+                        value={item.size}
+                        onChange={(e) =>
+                          handleSizeChange(index, "size", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="form-control">
+                      <FloatingInput
+                        label="Harga (Rp)"
+                        name="price"
+                        type="number"
+                        icon={productPrice}
+                        value={item.price}
+                        onChange={(e) =>
+                          handleSizeChange(index, "price", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="form-control">
+                      <FloatingInput
+                        label="Stok"
+                        name="stock"
+                        type="number"
+                        icon={productStock}
+                        value={item.stock}
+                        onChange={(e) =>
+                          handleSizeChange(index, "stock", e.target.value)
+                        }
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSizeRow(index)}
+                      className="btn btn-ghost btn-sm text-error"
+                      disabled={formData.sizes.length === 1}
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+
                 <button
                   type="button"
-                  onClick={() => removeSizeRow(index)}
-                  className="btn btn-ghost btn-sm text-error"
-                  disabled={formData.sizes.length === 1}
+                  onClick={addSizeRow}
+                  className="btn btn-outline btn-sm w-fit"
                 >
-                  <XIcon className="w-4 h-4" />
+                  + Tambah Ukuran
                 </button>
               </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={addSizeRow}
-              className="btn btn-outline btn-sm w-fit"
-            >
-              + Tambah Ukuran
-            </button>
-            <div className="form-control">
-              <FloatingInput
-                label="Deskripsi"
-                name="description"
-                type="textarea"
-                icon={productDescription}
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="form-control">
-              <label className="label mb-2">
-                <span className="label-text font-semibold text-base text-[#d6d6d6] items-center gap-2">
-                  Gambar Produk
-                </span>
-                <span className="label-text-alt text-xs opacity-60">
-                  Maks. 3 gambar
-                </span>
-              </label>
-              <div className="bg-base-200 rounded-xl p-2 border-2 border-dashed border-base-300 hover:border-secondary transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  className="file-input file-input-bordered file-input-secondary w-full"
-                  required={!editingProduct}
-                />
-
-                {editingProduct && (
-                  <p className="text-xs text-base-content/60 mt-2 text-center">
-                    Kosongkan agar tetap menggunakan gambar lama.
-                  </p>
-                )}
-              </div>
-
-              {imagePreviews.length > 0 && (
-                <div className="flex gap-2 mt-2">
-                  {imagePreviews.map((preview, index) => (
-                    <div key={index} className="avatar">
-                      <div className="w-20 rounded-lg">
-                        <img src={preview} alt={`Preview ${index + 1}`} />
-                      </div>
-                    </div>
-                  ))}
+              <div className="space-y-6 mt-6">
+                <div className="form-control">
+                  <FloatingInput
+                    label="Deskripsi"
+                    name="description"
+                    type="textarea"
+                    icon={productDescription}
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-              )}
+                <div className="form-control">
+                  <label className="label mb-2">
+                    <span className="label-text font-semibold text-base text-[#d6d6d6] items-center gap-2">
+                      Gambar Produk
+                    </span>
+                    <span className="label-text-alt text-xs opacity-60">
+                      Maks. 3 gambar
+                    </span>
+                  </label>
+                  <div className="bg-base-200 rounded-xl p-2 border-2 border-dashed border-base-300 hover:border-secondary transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="file-input file-input-bordered file-input-secondary w-full"
+                      required={!editingProduct}
+                    />
+
+                    {editingProduct && (
+                      <p className="text-xs text-base-content/60 mt-2 text-center">
+                        Kosongkan agar tetap menggunakan gambar lama.
+                      </p>
+                    )}
+                  </div>
+
+                  {imagePreviews.length > 0 && (
+                    <div className="flex gap-2 mt-2">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="avatar">
+                          <div className="w-20 rounded-lg">
+                            <img src={preview} alt={`Preview ${index + 1}`} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="modal-action">
