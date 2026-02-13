@@ -3,14 +3,13 @@ import { User } from "../models/user.model.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Token tidak tersedia." });
+    let token = req.cookies?.accessToken;
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      }
     }
-
-    const token = authHeader.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ message: "Token tidak tersedia." });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded)

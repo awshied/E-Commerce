@@ -1,10 +1,13 @@
 import cloudinary from "../config/cloudinary.js";
 import { Product } from "../models/product.model.js";
-import { Category } from "../models/category.model.js";
-import { Type } from "../models/type.model.js";
 import { Order } from "../models/order.model.js";
 import { User } from "../models/user.model.js";
 import { Expense } from "../models/expense.model.js";
+import {
+  calculateProductStatus,
+  attachFinalPrice,
+} from "../lib/productStatus.js";
+import { validatePromo } from "../lib/validatePromo.js";
 
 // Membuat atau Menambahkan Produk Baru
 export const createProduct = async (req, res) => {
@@ -17,14 +20,6 @@ export const createProduct = async (req, res) => {
         .status(400)
         .json({ message: "Semua field tidak boleh kosong." });
     }
-
-    const categoryExists = await Category.findById(category);
-    if (!categoryExists)
-      return res.status(404).json({ message: "Kategori tidak ditemukan." });
-
-    const typeExists = await Type.findById(type);
-    if (!typeExists)
-      return res.status(404).json({ message: "Tipe tidak ditemukan." });
 
     let parsedSizes;
     try {
@@ -49,14 +44,21 @@ export const createProduct = async (req, res) => {
 
     const uploadResults = await Promise.all(uploadPromises);
 
-    const imageUrls = uploadResults.map((result) => result.secure_url);
+    const imageUrls = uploadResults.map((result) => ({
+      url: result.secure_url,
+      public_id: result.public_id,
+    }));
 
     let parsedPromo = null;
     if (promo) {
-      parsedPromo = typeof promo === "string" ? JSON.parse(promo) : promo;
+      try {
+        parsedPromo = typeof promo === "string" ? JSON.parse(promo) : promo;
 
-      if (!parsedPromo.startDate || !parsedPromo.endDate) {
-        return res.status(400).json({ message: "Tanggal promo wajib diisi." });
+        validatePromo(parsedPromo);
+      } catch (error) {
+        return res.status(400).json({
+          message: error.message || "Promo tidak valid.",
+        });
       }
     }
 
@@ -81,49 +83,17 @@ export const createProduct = async (req, res) => {
 // Menangkap Semua Produk Yang Tersedia
 export const getAllProducts = async (req, res) => {
   try {
-    const { category, gender, promoOnly, newOnly } = req.query;
+    const { promoOnly, newOnly } = req.query;
 
-    let filter = {};
-
-    if (category) filter.category = category;
-    if (gender) filter.gender = gender;
-
-    let products = await Product.find(filter)
-      .populate("category", "name")
-      .populate("type", "name")
-      .sort({ createdAt: -1 });
-
-    const now = new Date();
+    const products = await Product.find().sort({ createdAt: -1 });
 
     const formattedProducts = products.map((product) => {
-      let isNewActive = product.newUntil && product.newUntil > now;
-
-      let isPromoActive = false;
-
-      if (
-        product.promo &&
-        product.promo.startDate <= now &&
-        product.promo.endDate >= now
-      ) {
-        isPromoActive = true;
-      }
+      const { isNewActive, isPromoActive } = calculateProductStatus(product);
 
       if (promoOnly && !isPromoActive) return null;
       if (newOnly && !isNewActive) return null;
 
-      const sizesWithFinalPrice = product.sizes.map((size) => {
-        let finalPrice = size.price;
-
-        if (isPromoActive) {
-          finalPrice =
-            size.price - (size.price * product.promo.discountPercent) / 100;
-        }
-
-        return {
-          ...size.toObject(),
-          finalPrice,
-        };
-      });
+      const sizesWithFinalPrice = attachFinalPrice(product, isPromoActive);
 
       return {
         ...product.toObject(),
@@ -166,11 +136,18 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    if (promo) {
+    if (promo !== undefined) {
       try {
-        product.promo = typeof promo === "string" ? JSON.parse(promo) : promo;
+        const parsedPromo =
+          typeof promo === "string" ? JSON.parse(promo) : promo;
+
+        validatePromo(parsedPromo);
+
+        product.promo = parsedPromo;
       } catch (error) {
-        return res.status(400).json({ message: "Promo tidak valid." });
+        return res.status(400).json({
+          message: error.message || "Promo tidak valid.",
+        });
       }
     }
 
@@ -180,12 +157,11 @@ export const updateProduct = async (req, res) => {
       }
 
       if (product.images && product.images.length > 0) {
-        const deletePromises = product.images.map((imageUrl) => {
-          const publicId =
-            "products/" + imageUrl.split("/products/")[1]?.split(".")[0];
-          if (publicId) return cloudinary.uploader.destroy(publicId);
-        });
-        await Promise.all(deletePromises.filter(Boolean));
+        const deletePromises = product.images.map((image) =>
+          cloudinary.uploader.destroy(image.public_id),
+        );
+
+        await Promise.all(deletePromises);
       }
 
       const uploadPromises = req.files.map((file) => {
@@ -195,7 +171,10 @@ export const updateProduct = async (req, res) => {
       });
 
       const uploadResults = await Promise.all(uploadPromises);
-      product.images = uploadResults.map((result) => result.secure_url);
+      product.images = uploadResults.map((result) => ({
+        url: result.secure_url,
+        public_id: result.public_id,
+      }));
     }
 
     await product.save();
@@ -217,12 +196,11 @@ export const deleteProduct = async (req, res) => {
     }
 
     if (product.images && product.images.length > 0) {
-      const deletePromises = product.images.map((imageUrl) => {
-        const publicId =
-          "products/" + imageUrl.split("/products/")[1]?.split(".")[0];
-        if (publicId) return cloudinary.uploader.destroy(publicId);
-      });
-      await Promise.all(deletePromises.filter(Boolean));
+      const deletePromises = product.images.map((image) =>
+        cloudinary.uploader.destroy(image.public_id),
+      );
+
+      await Promise.all(deletePromises);
     }
 
     await Product.findByIdAndDelete(id);

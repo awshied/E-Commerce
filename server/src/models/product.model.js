@@ -47,12 +47,12 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      type: String,
+      required: true,
     },
     type: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Type",
+      type: String,
+      required: true,
     },
     gender: {
       type: String,
@@ -63,14 +63,10 @@ const productSchema = new mongoose.Schema(
     sizes: [sizeSchema],
     images: [
       {
-        type: String,
-        required: true,
+        url: String,
+        public_id: String,
       },
     ],
-    newLabel: {
-      type: Boolean,
-      default: true,
-    },
     newUntil: {
       type: Date,
     },
@@ -92,7 +88,7 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.pre("save", function (next) {
-  if (this.newLabel && !this.newUntil) {
+  if (!this.newUntil) {
     const sevenDays = 7 * 24 * 60 * 60 * 1000;
     this.newUntil = new Date(Date.now() + sevenDays);
   }

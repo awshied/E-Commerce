@@ -76,21 +76,28 @@ export const login = async (req, res) => {
 
     const accessToken = generateToken(user._id);
 
-    res.status(200).json({
-      accessToken,
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        imageUrl: user.imageUrl,
-        addresses: user.addresses,
-        wishlist: user.wishlist,
-        lastActive: user.lastActive,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
-    });
+    res
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000,
+      })
+      .json({
+        accessToken,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          imageUrl: user.imageUrl,
+          addresses: user.addresses,
+          wishlist: user.wishlist,
+          lastActive: user.lastActive,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
   } catch (error) {
     console.error("Error di controller login:", error);
     res.status(500).json({ message: "Server internal error." });
