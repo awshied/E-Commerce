@@ -3,13 +3,14 @@ import { Link } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, XIcon } from "lucide-react";
 
-import { productApi, categoryApi, typeApi } from "../lib/api";
-import { getStockStatusBadge, getTotalStock } from "../lib/statusBadge";
+import { productApi } from "../lib/api";
 import productManagement from "../assets/icons/product-management.png";
 import productEdit from "../assets/icons/product-edit.png";
 import trash from "../assets/icons/trash.png";
 import productCategory from "../assets/icons/product-category.png";
 import productType from "../assets/icons/product-type.png";
+import productGenderFit from "../assets/icons/product-gender-fit.png";
+import productPromo from "../assets/icons/calendar.png";
 import productName from "../assets/icons/product-name.png";
 import productPrice from "../assets/icons/product-price.png";
 import productStock from "../assets/icons/product-stock.png";
@@ -20,6 +21,7 @@ import FloatingInput from "../components/FloatingInput";
 const ProductsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [enablePromo, setEnablePromo] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -36,23 +38,28 @@ const ProductsPage = () => {
   });
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [deletingProductId, setDeletingProductId] = useState(null);
+
+  const isPromoActive = (promo) => {
+    if (!promo) return false;
+
+    const now = new Date();
+    const start = new Date(promo.startDate);
+    const end = new Date(promo.endDate);
+
+    return now >= start && now <= end;
+  };
+
+  const getDiscountedPrice = (price, discountPercent) => {
+    const clampedDiscount = Math.max(0, Math.min(100, discountPercent));
+    return Math.round(price - price * (clampedDiscount / 100));
+  };
 
   const queryClient = useQueryClient();
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["products"],
     queryFn: productApi.getAll,
-  });
-
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: categoryApi.getAll,
-  });
-
-  const { data: types = [] } = useQuery({
-    queryKey: ["types", formData.category],
-    queryFn: () => typeApi.getByCategory(formData.category),
-    enabled: !!formData.category,
   });
 
   const createProductMutation = useMutation({
@@ -74,8 +81,12 @@ const ProductsPage = () => {
   const deleteProductMutation = useMutation({
     mutationFn: productApi.delete,
     onSuccess: () => {
+      setDeletingProductId(null);
       closeModal();
       queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: () => {
+      setDeletingProductId(null);
     },
   });
 
@@ -109,8 +120,8 @@ const ProductsPage = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      category: product.category?._id,
-      type: product.type?._id,
+      category: product.category,
+      type: product.type,
       gender: product.gender,
       description: product.description,
       sizes: product.sizes.map((s) => ({
@@ -118,14 +129,26 @@ const ProductsPage = () => {
         price: s.price.toString(),
         stock: s.stock.toString(),
       })),
-      promo: product.promo || {
-        title: "",
-        discountPercent: "",
-        startDate: "",
-        endDate: "",
-      },
+      promo: product.promo
+        ? {
+            title: product.promo.title,
+            discountPercent: product.promo.discountPercent?.toString() || "",
+            startDate: product.promo.startDate
+              ? new Date(product.promo.startDate).toLocaleDateString("en-CA") // yields yyyy-mm-dd
+              : "",
+            endDate: product.promo.endDate
+              ? new Date(product.promo.endDate).toLocaleDateString("en-CA")
+              : "",
+          }
+        : {
+            title: "",
+            discountPercent: "",
+            startDate: "",
+            endDate: "",
+          },
     });
-    setImagePreviews(product.images);
+    setEnablePromo(!!product.promo);
+    setImagePreviews(product.images.map((img) => img.url));
     setShowModal(true);
   };
 
@@ -173,7 +196,7 @@ const ProductsPage = () => {
       ),
     );
 
-    if (formData.promo.title) {
+    if (enablePromo) {
       formDataToSend.append(
         "promo",
         JSON.stringify({
@@ -207,7 +230,7 @@ const ProductsPage = () => {
   const addSizeRow = () => {
     setFormData({
       ...formData,
-      sizes: [...formData.sizes, { size: "", stock: "" }],
+      sizes: [...formData.sizes, { size: "", price: "", stock: "" }],
     });
   };
 
@@ -241,126 +264,205 @@ const ProductsPage = () => {
       </div>
 
       {/* Main */}
-      <div className="grid grid-cols-1 gap-4">
-        {products.map((product) => {
-          const totalStock = getTotalStock(product.sizes);
-          const status = getStockStatusBadge(totalStock);
-
-          return (
-            <div key={product._id} className="card bg-base-200 shadow-xl">
-              <div className="card-body">
-                <div className="flex items-center gap-6">
-                  <div className="avatar">
-                    <div className="w-27 rounded-xl">
-                      <img
-                        src={product.images?.[0] || "/placeholder.png"}
-                        alt={product.name}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex flex-col gap-2">
-                      <h3 className="card-title text-2xl font-bold">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-start gap-8">
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={productCategory}
-                            alt={productCategory}
-                            className="w-4 h-4"
-                          />
-                          <p className="text-base-content text-sm font-semibold">
-                            {product.category?.name}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={productType}
-                            alt={productType}
-                            className="w-4 h-4"
-                          />
-                          <p className="text-base-content text-sm font-semibold">
-                            {product.type?.name}
-                          </p>
-                        </div>
-                        <div className={`badge ${status.class} font-semibold`}>
-                          {status.text}
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-10">
-                        <div>
-                          <p className="text-xs font-semibold text-base-content/70">
-                            Harga
-                          </p>
-                          <p className="text-lg font-bold">
-                            Rp.{" "}
-                            {Math.min(
-                              ...product.sizes.map(
-                                (s) => s.finalPrice || s.price,
-                              ),
-                            ).toLocaleString("id-ID")}
-                          </p>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <p className="text-xs font-semibold text-base-content/70">
-                            Stok
-                          </p>
-
-                          <div
-                            className="grid gap-4"
-                            style={{
-                              gridTemplateColumns: `repeat(${product.sizes.length}, minmax(0, 1fr))`,
-                            }}
-                          >
-                            {product.sizes?.map((item, index) => (
-                              <div key={index} className="flex gap-2">
-                                <span className="text-sm font-bold text-base-content/70">
-                                  {item.size} :
-                                </span>
-                                <span className="text-sm font-semibold">
-                                  {item.stock}
-                                </span>
-                              </div>
-                            ))}
+      <div className="card bg-base-300 shadow-xl">
+        <div className="card-body">
+          {productsLoading ? (
+            <div className="flex justify-center py-12">
+              <span className="loading loading-spinner loading-lg" />
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12 text-base-content/60">
+              <p className="text-xl font-semibold mb-2">
+                Belum ada produk yang ditambahkan
+              </p>
+              <p className="text-sm">
+                Daftar produk akan muncul setelah Anda menambahkan produk baru
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {products.map((product) => {
+                return (
+                  <div key={product._id} className="card bg-base-300">
+                    <div className="card-body">
+                      <div className="flex items-center gap-6">
+                        <div className="avatar">
+                          <div className="w-44 rounded-xl relative">
+                            {isPromoActive(product.promo) && (
+                              <span className="absolute bottom-1 left-1 badge badge-base-300 py-4 font-bold text-[#ffc586]">
+                                {product.promo.title}
+                              </span>
+                            )}
+                            <img
+                              src={
+                                product.images?.[0]?.url || "/placeholder.png"
+                              }
+                              alt={product.name}
+                            />
                           </div>
                         </div>
+
+                        <div className="flex-1">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex gap-6">
+                              <h3 className="card-title text-3xl font-extrabold">
+                                {product.name}
+                              </h3>
+                              {isPromoActive(product.promo) && (
+                                <span className="card-title font-bold text-sm text-error">
+                                  - {product.promo.discountPercent}% Off
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-start gap-8">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={productCategory}
+                                  alt={productCategory}
+                                  className="w-4 h-4"
+                                />
+                                <p className="text-base-content text-sm font-semibold">
+                                  {product.category}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={productType}
+                                  alt={productType}
+                                  className="w-4 h-4"
+                                />
+                                <p className="text-base-content text-sm font-semibold">
+                                  {product.type}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={productGenderFit}
+                                  alt={productGenderFit}
+                                  className="w-4 h-4"
+                                />
+                                <p className="text-base-content text-sm font-semibold">
+                                  {product.gender}
+                                </p>
+                              </div>
+
+                              {isPromoActive(product.promo) && (
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={productPromo}
+                                    alt={productPromo}
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-xs font-semibold text-base-content">
+                                    {new Date(
+                                      product.promo.startDate,
+                                    ).toLocaleDateString("id-ID")}{" "}
+                                    -{" "}
+                                    {new Date(
+                                      product.promo.endDate,
+                                    ).toLocaleDateString("id-ID")}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-start gap-1 mt-2">
+                              <p className="text-xs font-bold text-base-content/70">
+                                Ukuran
+                              </p>
+
+                              <div
+                                className="grid gap-4"
+                                style={{
+                                  gridTemplateColumns: `repeat(${product.sizes.length}, minmax(0, 1fr))`,
+                                }}
+                              >
+                                {product.sizes?.map((item, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex flex-col gap-2"
+                                  >
+                                    <div className="flex gap-2">
+                                      <span className="text-sm font-bold text-base-content/70">
+                                        {item.size} :
+                                      </span>
+                                      <span className="text-sm font-semibold">
+                                        {item.stock}
+                                        <span className="text-xs text-base-content/70 font-bold">
+                                          {" "}
+                                          pcs
+                                        </span>
+                                      </span>
+                                    </div>
+                                    {isPromoActive(product.promo) ? (
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="text-xs font-semibold line-through text-base-content/50">
+                                          Rp.{" "}
+                                          {item.price.toLocaleString("id-ID")}
+                                        </span>
+
+                                        <span className="text-base font-bold text-[#ffc586]">
+                                          Rp.{" "}
+                                          {getDiscountedPrice(
+                                            item.price,
+                                            product.promo.discountPercent,
+                                          ).toLocaleString("id-ID")}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-base font-bold text-secondary">
+                                        Rp. {item.price.toLocaleString("id-ID")}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="card-actions mr-2">
+                          <button
+                            className="btn btn-square btn-ghost"
+                            onClick={() => handleEdit(product)}
+                          >
+                            <img
+                              src={productEdit}
+                              alt={productEdit}
+                              className="w-6 h-6"
+                            />
+                          </button>
+                          <button
+                            className="btn btn-square btn-ghost text-error"
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `Hapus produk "${product.name}"?`,
+                                )
+                              ) {
+                                setDeletingProductId(product._id);
+                                deleteProductMutation.mutate(product._id);
+                              }
+                            }}
+                          >
+                            {deletingProductId === product._id ? (
+                              <span className="loading loading-spinner"></span>
+                            ) : (
+                              <img
+                                src={trash}
+                                alt={trash}
+                                className="w-6 h-6"
+                              />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  <div className="card-actions mr-2">
-                    <button
-                      className="btn btn-square btn-ghost"
-                      onClick={() => handleEdit(product)}
-                    >
-                      <img
-                        src={productEdit}
-                        alt={productEdit}
-                        className="w-6 h-6"
-                      />
-                    </button>
-                    <button
-                      className="btn btn-square btn-ghost text-error"
-                      onClick={() => {
-                        if (window.confirm(`Hapus produk "${product.name}"?`)) {
-                          deleteProductMutation.mutate(product._id);
-                        }
-                      }}
-                    >
-                      {deleteProductMutation.isPending ? (
-                        <span className="loading loading-spinner"></span>
-                      ) : (
-                        <img src={trash} alt={trash} className="w-6 h-6" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
 
       {/* Modal */}
@@ -406,41 +508,31 @@ const ProductsPage = () => {
                       className="select select-bordered"
                       value={formData.category}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          category: e.target.value,
-                          type: "",
-                        })
+                        setFormData({ ...formData, category: e.target.value })
                       }
                       required
                     >
                       <option value="">Pilih Kategori</option>
-                      {categories.map((cat) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
+                      <option value="Pakaian">Pakaian</option>
+                      <option value="Aksesoris">Aksesoris</option>
+                      <option value="Elektronik">Elektronik</option>
+                      <option value="Kosmetik">Kosmetik</option>
                     </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="form-control">
-                    <select
-                      className="select select-bordered"
+                    <FloatingInput
+                      label="Jenis"
+                      name="type"
+                      type="text"
+                      icon={productType}
                       value={formData.type}
                       onChange={(e) =>
                         setFormData({ ...formData, type: e.target.value })
                       }
                       required
-                      disabled={!formData.category}
-                    >
-                      <option value="">Pilih Tipe</option>
-                      {types.map((t) => (
-                        <option key={t._id} value={t._id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="form-control">
                     <select
@@ -449,6 +541,7 @@ const ProductsPage = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, gender: e.target.value })
                       }
+                      required
                     >
                       <option value="Campuran">Campuran</option>
                       <option value="Pria">Pria</option>
@@ -571,7 +664,76 @@ const ProductsPage = () => {
                 </div>
               </div>
             </div>
-
+            <div className="grid grid-cols-[1fr_6fr]">
+              <div className="form-control">
+                <label className="label cursor-pointer">
+                  <span className="label-text font-semibold">Promo</span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary"
+                    checked={enablePromo}
+                    onChange={(e) => setEnablePromo(e.target.checked)}
+                  />
+                </label>
+              </div>
+              {enablePromo && (
+                <div className="grid grid-cols-4 gap-4">
+                  <FloatingInput
+                    label="Nama Promo"
+                    type="text"
+                    value={formData.promo.title}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        promo: { ...formData.promo, title: e.target.value },
+                      })
+                    }
+                  />
+                  <FloatingInput
+                    label="Diskon (%)"
+                    type="number"
+                    value={formData.promo.discountPercent}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        promo: {
+                          ...formData.promo,
+                          discountPercent: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <input
+                    type="date"
+                    className="input input-bordered w-full"
+                    value={formData.promo.startDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        promo: {
+                          ...formData.promo,
+                          startDate: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <input
+                    type="date"
+                    className="input input-bordered w-full"
+                    value={formData.promo.endDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        promo: {
+                          ...formData.promo,
+                          endDate: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </div>
             <div className="modal-action">
               <button
                 type="button"

@@ -23,29 +23,6 @@ export const productApi = {
   },
 };
 
-// Kategori
-export const categoryApi = {
-  getAll: async () => {
-    const { data } = await axiosInstance.get("/admin/categories");
-    return data;
-  },
-};
-
-// Tipe
-export const typeApi = {
-  getAll: async () => {
-    const { data } = await axiosInstance.get("/admin/types");
-    return data;
-  },
-
-  getByCategory: async (categoryId) => {
-    const { data } = await axiosInstance.get(
-      `/admin/types?category=${categoryId}`,
-    );
-    return data;
-  },
-};
-
 // Pesanan
 export const orderApi = {
   getAll: async () => {

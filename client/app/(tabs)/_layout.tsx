@@ -65,6 +65,38 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="blog"
+        options={{
+          title: "Blog",
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={
+                focused
+                  ? require("../../assets/images/icons/blog-fill.png")
+                  : require("../../assets/images/icons/blog-outline.png")
+              }
+              className="size-7"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          title: "Wishlist",
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={
+                focused
+                  ? require("../../assets/images/icons/wishlist-fill.png")
+                  : require("../../assets/images/icons/wishlist-outline.png")
+              }
+              className="size-7"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Anda",

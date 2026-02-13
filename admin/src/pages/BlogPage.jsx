@@ -1,10 +1,10 @@
+import { PlusIcon } from "lucide-react";
 import React from "react";
 import { Link } from "react-router";
-import { PlusIcon } from "lucide-react";
 
-import category from "../assets/icons/category.png";
+import blog from "../assets/icons/blog.png";
 
-const CategoriesPage = () => {
+const BlogPage = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -12,21 +12,21 @@ const CategoriesPage = () => {
         <div className="breadcrumbs text-sm mb-3">
           <ul className="px-3">
             <li>
-              <Link to="/categories">
-                <img src={category} alt="Category" className="size-6" />
+              <Link to="/blogs">
+                <img src={blog} alt="Blog" className="size-6" />
               </Link>
             </li>
-            <li className="font-semibold text-white">Kategori</li>
+            <li className="font-semibold text-white">Blog</li>
           </ul>
         </div>
 
         <button className="btn btn-secondary gap-2 font-bold">
           <PlusIcon className="w-5 h-5" />
-          Tambah Kategori
+          Tambah Blog
         </button>
       </div>
     </div>
   );
 };
 
-export default CategoriesPage;
+export default BlogPage;

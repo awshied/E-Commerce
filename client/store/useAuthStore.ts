@@ -4,15 +4,30 @@ import { axiosInstance } from "../lib/axios";
 import { saveToken, removeToken } from "../lib/secureStore";
 import { User } from "@/types";
 
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+interface RegisterPayload {
+  username: string;
+  email: string;
+  password: string;
+}
+
+interface UpdateProfilePayload {
+  imageUrl: string;
+}
+
 interface AuthState {
   user: User | null;
   isLoading: boolean;
 
   checkAuth: () => Promise<void>;
-  login: (data: any) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  login: (data: LoginPayload) => Promise<void>;
+  register: (data: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (data: any) => Promise<void>;
+  updateProfile: (data: UpdateProfilePayload) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -60,8 +75,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    await removeToken();
-    set({ user: null });
+    try {
+      await axiosInstance.post("/auth/logout");
+    } catch {
+      // best-effort: server gagal, tapi client tetap logout
+    } finally {
+      await removeToken();
+      set({ user: null });
+    }
   },
 
   updateProfile: async (data) => {

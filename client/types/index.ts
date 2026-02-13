@@ -1,17 +1,32 @@
-export interface ProductSize {
+export interface Size {
   size: string;
+  price: number;
   stock: number;
+}
+
+export interface Promo {
+  title: string;
+  discountPercent: number;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface Image {
+  url: string;
+  public_id: string;
 }
 
 export interface Product {
   _id: string;
   name: string;
   description: string;
-  price: number;
   category: string;
-  types: string;
-  sizes: ProductSize[];
-  images: string[];
+  type: string;
+  gender: "Campuran" | "Pria" | "Wanita" | "Anak-anak";
+  sizes: Size[];
+  images: Image[];
+  newUntil?: Date;
+  promo?: Promo | null;
   averageRating: number;
   totalReviews: number;
   createdAt: string;
