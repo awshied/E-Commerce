@@ -39,9 +39,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       const res = await axiosInstance.get("/auth/check");
 
       set({ user: res.data });
-    } catch {
-      await removeToken();
-      set({ user: null });
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        await removeToken();
+        set({ user: null });
+      }
     } finally {
       set({ isLoading: false });
     }

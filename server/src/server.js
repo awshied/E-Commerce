@@ -52,7 +52,7 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDB();
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`Servernya jalan kok di port: ${PORT}`);
     });
     server.on("error", (error) => {

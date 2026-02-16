@@ -30,6 +30,7 @@ const AuthScreen = () => {
       const message =
         error?.response?.data?.message || "Anda tidak bisa login.";
       Alert.alert("Login gagal", message);
+      console.log(error);
     }
   };
 
