@@ -38,18 +38,32 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
   const [selectedSizes, setSelectedSizes] = useState<{
     [productId: string]: Product["sizes"][number];
   }>({});
+  const [wishlistLoading, setWishlistLoading] = useState<
+    Record<string, boolean>
+  >({});
+  const [cartLoading, setCartLoading] = useState<Record<string, boolean>>({});
 
-  const {
-    isInWishlist,
-    toggleWishlist,
-    isAddingToWishlist,
-    isRemovingFromWishlist,
-  } = useWishlist();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
-  const { isAddingToCart, addToCart } = useCart();
+  const { addToCart } = useCart();
 
   const heartOutline = require("../assets/images/icons/heart-outline.png");
   const heartFill = require("../assets/images/icons/heart-fill.png");
+
+  const handleToggleWishlist = async (productId: string) => {
+    setWishlistLoading((prev) => ({ ...prev, [productId]: true }));
+
+    try {
+      await toggleWishlist(productId);
+    } catch (error: any) {
+      Alert.alert(
+        "Gagal",
+        error?.response?.data?.error || "Gagal menambahkan sebagai favorit.",
+      );
+    } finally {
+      setWishlistLoading((prev) => ({ ...prev, [productId]: false }));
+    }
+  };
 
   const handleSelectSize = (
     productId: string,
@@ -66,6 +80,8 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
     productName: string,
     size: string,
   ) => {
+    setCartLoading((prev) => ({ ...prev, [productId]: true }));
+
     addToCart(
       { productId, size, quantity: 1 },
       {
@@ -82,13 +98,18 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
               "Gagal menambahkan barang ke dalam keranjang.",
           );
         },
+        onSettled: () => {
+          setCartLoading((prev) => ({ ...prev, [productId]: false }));
+        },
       },
     );
   };
 
   const renderProduct = ({ item: product }: { item: Product }) => {
     if (!product.sizes.length) return null;
+    const isWishlistLoading = wishlistLoading[product._id];
     const selectedSize = selectedSizes[product._id] || product.sizes[0];
+    const isCartLoading = cartLoading[product._id];
 
     return (
       <TouchableOpacity
@@ -111,11 +132,11 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
           <TouchableOpacity
             className="absolute top-2 right-2 bg-black/30 backdrop-blur-xl p-2 rounded-full"
             activeOpacity={0.7}
-            onPress={() => toggleWishlist(product._id)}
-            disabled={isAddingToWishlist || isRemovingFromWishlist}
+            onPress={() => handleToggleWishlist(product._id)}
+            disabled={isWishlistLoading}
           >
-            {isAddingToWishlist || isRemovingFromWishlist ? (
-              <ActivityIndicator size="small" color="#ffffff" />
+            {isWishlistLoading ? (
+              <ActivityIndicator size="small" color="#d2d2d2" />
             ) : (
               <Image
                 source={isInWishlist(product._id) ? heartFill : heartOutline}
@@ -238,10 +259,10 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
             onPress={() =>
               handleAddToCart(product._id, product.name, selectedSize.size)
             }
-            disabled={isAddingToCart}
+            disabled={isCartLoading}
           >
-            {isAddingToCart ? (
-              <ActivityIndicator size="small" color="#121212" />
+            {isCartLoading ? (
+              <ActivityIndicator size="small" color="#d2d2d2" />
             ) : (
               <View className="flex-row items-center justify-center px-4 py-2 gap-2">
                 <Image

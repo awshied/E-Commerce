@@ -5,14 +5,17 @@ import {
   View,
   Image,
   TextInput,
+  useWindowDimensions,
 } from "react-native";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 
 import SafeScreen from "@/components/SafeScreen";
 import { useAuthStore } from "@/store/useAuthStore";
 import ProductGrid from "@/components/ProductGrid";
 import useProducts from "@/hooks/useProducts";
 import ProductList from "@/components/ProductList";
+import FilterModal from "@/components/FilterModal";
+import { ProductFilter } from "@/types/index";
 
 const Kategori = [
   {
@@ -42,23 +45,71 @@ const Kategori = [
   },
 ];
 
+const promoBanner = [
+  require("../../assets/images/ramadhan-sale.png"),
+  require("../../assets/images/christmas-sale.png"),
+  require("../../assets/images/dirgahayu-sale.png"),
+  require("../../assets/images/new-arrival-sale.png"),
+];
+
 const HomeScreen = () => {
   const { user } = useAuthStore();
+  const { width } = useWindowDimensions();
+  const bannerRef = useRef<ScrollView>(null);
+  const [activeBanner, setActiveBanner] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [filters, setFilters] = useState<ProductFilter>({});
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const BANNER_HEIGHT = 165;
+  const activeCategory = filters.category ?? "Semua";
 
   const { data: products, isLoading, isError } = useProducts();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const nextIndex =
+        activeBanner === promoBanner.length - 1 ? 0 : activeBanner + 1;
+
+      bannerRef.current?.scrollTo({
+        x: nextIndex * width,
+        animated: true,
+      });
+
+      setActiveBanner(nextIndex);
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [activeBanner]);
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
     let filtered = products;
 
-    if (selectedCategory !== "Semua") {
+    if (filters.category) {
       filtered = filtered.filter(
-        (product) => product.category === selectedCategory,
+        (product) => product.category === filters.category,
+      );
+    }
+
+    if (filters.type) {
+      filtered = filtered.filter((product) => product.type === filters.type);
+    }
+
+    if (filters.gender) {
+      filtered = filtered.filter((p) => p.gender === filters.gender);
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      filtered = filtered.filter((p) =>
+        p.sizes.some((s) => {
+          const aboveMin =
+            filters.minPrice === undefined || s.price >= filters.minPrice;
+          const belowMax =
+            filters.maxPrice === undefined || s.price <= filters.maxPrice;
+          return aboveMin && belowMax;
+        }),
       );
     }
 
@@ -69,15 +120,11 @@ const HomeScreen = () => {
     }
 
     return filtered;
-  }, [products, selectedCategory, searchQuery]);
+  }, [products, filters, searchQuery]);
 
   return (
     <SafeScreen>
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="relative">
           <Image
@@ -133,8 +180,10 @@ const HomeScreen = () => {
                   onChangeText={setSearchQuery}
                 />
               </View>
-
-              <TouchableOpacity className="shadow-xl">
+              <TouchableOpacity
+                className="shadow-xl"
+                onPress={() => setFilterVisible(true)}
+              >
                 <View className="bg-background-light rounded-full p-[14px]">
                   <Image
                     source={require("../../assets/images/icons/filter.png")}
@@ -154,21 +203,73 @@ const HomeScreen = () => {
           />
         </View>
 
+        {/* Promo Spesial */}
+        <View className="mb-6">
+          <Text className="text-text-primary px-6 text-lg font-bold">
+            Nikmati Promo Sepuasmu
+          </Text>
+          {/* Promo Carousel */}
+          <View className="mt-3">
+            <ScrollView
+              ref={bannerRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / width);
+                setActiveBanner(index);
+              }}
+            >
+              {promoBanner.map((banner, index) => (
+                <View key={index} style={{ width }} className="px-6">
+                  <Image
+                    source={banner}
+                    className="w-full h-[140px] rounded-2xl shadow-xl"
+                    resizeMode="cover"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+
+            {/* Indicator */}
+            <View className="flex-row justify-center mt-4 gap-2">
+              {promoBanner.map((_, index) => (
+                <View
+                  key={index}
+                  className={`h-2 rounded-full ${
+                    activeBanner === index
+                      ? "w-6 bg-primary-purple"
+                      : "w-2 bg-gray-300"
+                  }`}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+
         {/* Filter Kategori */}
         <View className="px-6 mb-6">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-text-primary text-lg font-bold">
               Kategori
             </Text>
-            <Text className="text-text-gray/70 text-sm">(5) Kategori</Text>
+            <Text className="text-text-gray/70 text-sm">
+              ({Kategori.length}) Kategori
+            </Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {Kategori.map((category) => {
-              const isSelected = selectedCategory === category.name;
+              const isSelected = activeCategory === category.name;
               return (
                 <TouchableOpacity
                   key={category.name}
-                  onPress={() => setSelectedCategory(category.name)}
+                  onPress={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      category:
+                        category.name === "Semua" ? undefined : category.name,
+                    }))
+                  }
                   className={`mx-1 rounded-xl size-20 overflow-hidden items-center justify-center ${isSelected ? "bg-surface" : ""}`}
                 >
                   <Image
@@ -192,7 +293,7 @@ const HomeScreen = () => {
         </View>
 
         {/* Produk */}
-        <View className="px-6 mb-6">
+        <View className="px-6 mb-3">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-text-primary text-lg font-bold">
               Jelajahi
@@ -247,6 +348,13 @@ const HomeScreen = () => {
           )}
         </View>
       </ScrollView>
+
+      <FilterModal
+        visible={filterVisible}
+        products={products ?? []}
+        onClose={() => setFilterVisible(false)}
+        onApply={(data) => setFilters(data)}
+      />
     </SafeScreen>
   );
 };

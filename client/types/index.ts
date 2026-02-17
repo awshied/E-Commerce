@@ -33,6 +33,14 @@ export interface Product {
   updatedAt: string;
 }
 
+export interface ProductFilter {
+  category?: string;
+  type?: string;
+  gender?: "Campuran" | "Pria" | "Wanita" | "Anak-anak";
+  minPrice?: number;
+  maxPrice?: number;
+}
+
 export interface Address {
   _id?: string;
   fullName: string;

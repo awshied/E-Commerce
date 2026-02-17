@@ -38,18 +38,32 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
   const [selectedSizes, setSelectedSizes] = useState<{
     [productId: string]: Product["sizes"][number];
   }>({});
+  const [wishlistLoading, setWishlistLoading] = useState<
+    Record<string, boolean>
+  >({});
+  const [cartLoading, setCartLoading] = useState<Record<string, boolean>>({});
 
-  const {
-    isInWishlist,
-    toggleWishlist,
-    isAddingToWishlist,
-    isRemovingFromWishlist,
-  } = useWishlist();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
-  const { isAddingToCart, addToCart } = useCart();
+  const { addToCart } = useCart();
 
   const heartOutline = require("../assets/images/icons/heart-outline.png");
   const heartFill = require("../assets/images/icons/heart-fill.png");
+
+  const handleToggleWishlist = async (productId: string) => {
+    setWishlistLoading((prev) => ({ ...prev, [productId]: true }));
+
+    try {
+      await toggleWishlist(productId);
+    } catch (error: any) {
+      Alert.alert(
+        "Gagal",
+        error?.response?.data?.error || "Gagal menambahkan sebagai favorit.",
+      );
+    } finally {
+      setWishlistLoading((prev) => ({ ...prev, [productId]: false }));
+    }
+  };
 
   const handleSelectSize = (
     productId: string,
@@ -66,6 +80,8 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
     productName: string,
     size: string,
   ) => {
+    setCartLoading((prev) => ({ ...prev, [productId]: true }));
+
     addToCart(
       { productId, size, quantity: 1 },
       {
@@ -82,13 +98,19 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
               "Gagal menambahkan barang ke dalam keranjang.",
           );
         },
+        onSettled: () => {
+          setCartLoading((prev) => ({ ...prev, [productId]: false }));
+        },
       },
     );
   };
 
   const renderProduct = ({ item: product }: { item: Product }) => {
     if (!product.sizes.length) return null;
+    const isWishlistLoading = wishlistLoading[product._id];
+
     const selectedSize = selectedSizes[product._id] || product.sizes[0];
+    const isCartLoading = cartLoading[product._id];
 
     return (
       <TouchableOpacity
@@ -126,11 +148,11 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
               </Text>
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => toggleWishlist(product._id)}
-                disabled={isAddingToWishlist || isRemovingFromWishlist}
+                onPress={() => handleToggleWishlist(product._id)}
+                disabled={isWishlistLoading}
               >
-                {isAddingToWishlist || isRemovingFromWishlist ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                {isWishlistLoading ? (
+                  <ActivityIndicator size="small" color="#d2d2d2" />
                 ) : (
                   <Image
                     source={
@@ -214,9 +236,14 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
                     </Text>
                   </View>
                 ) : (
-                  <Text className="text-text-primary font-extrabold text-xl">
-                    Rp. {selectedSize.price.toLocaleString("id-ID")}
-                  </Text>
+                  <View className="flex-row gap-2 items-center">
+                    <Text className="text-text-primary font-extrabold text-xl">
+                      Rp. {selectedSize.price.toLocaleString("id-ID")}
+                    </Text>
+                    <Text className="text-text-gray/70 font-semibold text-xs">
+                      / Pcs
+                    </Text>
+                  </View>
                 )}
               </View>
               <TouchableOpacity
@@ -224,10 +251,10 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
                 onPress={() =>
                   handleAddToCart(product._id, product.name, selectedSize.size)
                 }
-                disabled={isAddingToCart}
+                disabled={isCartLoading}
               >
-                {isAddingToCart ? (
-                  <ActivityIndicator size="small" color="#121212" />
+                {isCartLoading ? (
+                  <ActivityIndicator size="small" color="#d2d2d2" />
                 ) : (
                   <Image
                     source={require("../assets/images/icons/shopping-cart.png")}
