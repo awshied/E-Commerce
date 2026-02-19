@@ -18,6 +18,7 @@ import {
   updateProduct,
 } from "../controllers/admin.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { hideComment } from "../controllers/comment.controller.js";
 
 const router = Router();
 
@@ -47,5 +48,8 @@ router.get("/customers/stats", getCustomersWithStats);
 router.get("/stats", getDashboardStats);
 router.get("/revenueExpense", getRevenueExpenseChart);
 router.get("/onlineStatus", getUserOnlineStatus);
+
+// Menyembunyikan Ulasan
+router.patch("/:commentId/hide", hideComment);
 
 export default router;

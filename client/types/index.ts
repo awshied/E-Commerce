@@ -143,3 +143,25 @@ export interface Expense {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Reaction {
+  _id: string;
+  userId: string;
+  type: string;
+}
+
+export interface Reply {
+  _id: string;
+  userId: string;
+  message: string;
+}
+
+export interface Comment {
+  _id: string;
+  productId: string;
+  userId: string;
+  comment: string;
+  reactions: Reaction[];
+  replies: Reply[];
+  isHidden: boolean;
+}
