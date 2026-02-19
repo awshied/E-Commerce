@@ -2,6 +2,7 @@ import { generateToken } from "../lib/utils.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../config/cloudinary.js";
+import { Notification } from "../models/notification.model.js";
 
 // Registrasi atau Membuat Akun Baru
 export const register = async (req, res) => {
@@ -33,10 +34,17 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await User.create({
+    const newUser = await User.create({
       username,
       email,
       password: hashedPassword,
+    });
+
+    await Notification.create({
+      type: "user",
+      title: "User Baru",
+      message: `${newUser.username} baru saja bergabung bersama GlacioCore.`,
+      relatedUser: newUser._id,
     });
 
     return res.status(201).json({
@@ -49,7 +57,6 @@ export const register = async (req, res) => {
         message: "Username atau email sudah digunakan.",
       });
     }
-
     console.error("Error di controller registrasi:", error);
     res.status(500).json({ message: "Server internal error." });
   }

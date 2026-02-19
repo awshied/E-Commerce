@@ -1,5 +1,30 @@
 import { axiosInstance } from "./axios";
 
+// Notifikasi
+export const notificationApi = {
+  getAll: async () => {
+    const { data } = await axiosInstance.get("/admin/notification");
+    return data;
+  },
+
+  marked: async (id) => {
+    const { data } = await axiosInstance.put(`/admin/notification/${id}/read`);
+    return data;
+  },
+
+  delete: async (notificationId) => {
+    const { data } = await axiosInstance.delete(
+      `/admin/notification/${notificationId}`,
+    );
+    return data;
+  },
+
+  deleteAll: async () => {
+    const { data } = await axiosInstance.delete("/admin/notification");
+    return data;
+  },
+};
+
 // Produk
 export const productApi = {
   getAll: async () => {

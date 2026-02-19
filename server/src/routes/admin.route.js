@@ -2,14 +2,18 @@ import { Router } from "express";
 import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import {
   createProduct,
+  deleteAllNotifications,
+  deleteNotification,
   deleteProduct,
   getAllCustomers,
   getAllOrders,
   getAllProducts,
   getCustomersWithStats,
   getDashboardStats,
+  getNotifications,
   getRevenueExpenseChart,
   getUserOnlineStatus,
+  markAsRead,
   updateOrderStatus,
   updateProduct,
 } from "../controllers/admin.controller.js";
@@ -18,6 +22,12 @@ import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
 router.use(protectRoute, adminOnly);
+
+// Kelola Notifikasi
+router.get("/notification", getNotifications);
+router.put("/notification/:notificationId/read", markAsRead);
+router.delete("/notification/:notificationId", deleteNotification);
+router.delete("/notification", deleteAllNotifications);
 
 // Kelola Produk
 router.post("/products", upload.array("images", 3), createProduct);

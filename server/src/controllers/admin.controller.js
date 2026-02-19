@@ -1,4 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
+import { Notification } from "../models/notification.model.js";
 import { Product } from "../models/product.model.js";
 import { Order } from "../models/order.model.js";
 import { User } from "../models/user.model.js";
@@ -8,6 +9,61 @@ import {
   attachFinalPrice,
 } from "../lib/productStatus.js";
 import { validatePromo } from "../lib/validatePromo.js";
+
+// Menangkap Semua Notifikasi yang Tersedia
+export const getNotifications = async (_, res) => {
+  try {
+    const notifications = await Notification.find()
+      .populate("relatedUser")
+      .sort({ createdAt: -1 });
+
+    const unreadCount = await Notification.countDocuments({ isRead: false });
+
+    res.status(200).json({
+      notifications,
+      unreadCount,
+    });
+  } catch (error) {
+    console.error("Error di controller getNotifications:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menandai Notifikasi yang Sudah Dibaca
+export const markAsRead = async (req, res) => {
+  try {
+    await Notification.findByIdAndUpdate(req.params.notificationId, {
+      isRead: true,
+    });
+
+    res.status(200).json({ message: "Notifikasi telah dibaca." });
+  } catch (error) {
+    console.error("Error di controller markAsRead:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menghapus Satu Notifikasi
+export const deleteNotification = async (req, res) => {
+  try {
+    await Notification.findByIdAndDelete(req.params.notificationId);
+    res.status(200).json({ message: "Notifikasi telah dihapus." });
+  } catch (error) {
+    console.error("Error di controller deleteNotification:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menghapus Semua Notifikasi yang Ada
+export const deleteAllNotifications = async (_, res) => {
+  try {
+    await Notification.deleteMany();
+    res.status(200).json({ message: "Semua notifikasi berhasil dihapus." });
+  } catch (error) {
+    console.error("Error di controller deleteAllNotifications:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
 
 // Membuat atau Menambahkan Produk Baru
 export const createProduct = async (req, res) => {

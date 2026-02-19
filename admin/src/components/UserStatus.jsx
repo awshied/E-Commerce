@@ -78,7 +78,7 @@ const UserStatus = () => {
         <hr className="mt-2 w-full border-b border-neutral" />
 
         {/* Main */}
-        <div className="flex flex-col gap-3 max-h-105 mt-2 overflow-y-auto">
+        <div className="flex flex-col gap-3 max-h-70 mt-2 overflow-y-auto no-scrollbar">
           {users.map((user) => (
             <div
               key={user._id}

@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+import { Notification } from "../models/notification.model.js";
 import { Order } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
 import { Review } from "../models/review.model.js";
@@ -14,7 +16,6 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ error: "Pesanan tidak ada." });
     }
 
-    // Validate and deduct stock atomically
     for (const item of orderItems) {
       const result = await Product.findOneAndUpdate(
         {
@@ -42,6 +43,21 @@ export const createOrder = async (req, res) => {
           shippingAddress,
           paymentResult,
           totalPrice,
+        },
+      ],
+      { session },
+    );
+
+    const shortOrderId = order._id.toString().slice(-8);
+
+    await Notification.create(
+      [
+        {
+          type: "order",
+          title: "Pembayaran Baru",
+          message: `${user.username} telah melakukan pembayaran pada pesanan #${shortOrderId}.`,
+          relatedUser: user._id,
+          relatedOrder: order._id,
         },
       ],
       { session },

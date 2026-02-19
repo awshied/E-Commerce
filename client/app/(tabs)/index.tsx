@@ -80,7 +80,7 @@ const HomeScreen = () => {
     }, 3500);
 
     return () => clearInterval(interval);
-  }, [activeBanner]);
+  }, [activeBanner, width]);
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];

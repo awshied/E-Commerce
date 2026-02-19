@@ -1,3 +1,5 @@
+import { Notification } from "../models/notification.model.js";
+import { Product } from "../models/product.model.js";
 import { User } from "../models/user.model.js";
 
 // Membuat atau Menambahkan Alamat Baru
@@ -151,7 +153,20 @@ export const addToWishlist = async (req, res) => {
       return res.status(400).json({ error: "Produk sudah ada di favorit." });
     }
 
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: "Produk tidak ditemukan." });
+    }
+
     user.wishlist.push(productId);
+    await Notification.create({
+      type: "wishlist",
+      title: "Favorit Baru",
+      message: `${user.username} menambahkan ${product.name} sebagai favorit.`,
+      relatedUser: user._id,
+      relatedProduct: product._id,
+    });
+
     await user.save();
 
     res.status(200).json({
@@ -179,7 +194,7 @@ export const getWishlist = async (req, res) => {
   }
 };
 
-// Membuat Produk Dari Favorit
+// Membuang Produk Dari Favorit
 export const removeFromWishlist = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -201,6 +216,7 @@ export const removeFromWishlist = async (req, res) => {
   }
 };
 
+// Keaktifan User
 export const pingUser = async (req, res) => {
   try {
     if (!req.user) {

@@ -4,6 +4,16 @@
   themes: night;
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 @layer components {
   .icon-active-yellow {
     filter: brightness(0) saturate(100%) invert(96%) sepia(84%) saturate(6118%)
