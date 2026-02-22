@@ -5,6 +5,7 @@ import {
   reactToComment,
   replyToComment,
 } from "../controllers/comment.controller.js";
+import { protectRoute } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 

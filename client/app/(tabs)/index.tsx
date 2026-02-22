@@ -61,7 +61,7 @@ const HomeScreen = () => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [filters, setFilters] = useState<ProductFilter>({});
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const BANNER_HEIGHT = 165;
+  const BANNER_HEIGHT = 175;
   const activeCategory = filters.category ?? "Semua";
 
   const { data: products, isLoading, isError } = useProducts();
@@ -95,6 +95,30 @@ const HomeScreen = () => {
 
     if (filters.type) {
       filtered = filtered.filter((product) => product.type === filters.type);
+    }
+
+    if (filters.promoRange) {
+      const now = new Date();
+
+      filtered = filtered.filter((product) => {
+        const promo = product.promo;
+        if (!promo) return false;
+
+        const discount = promo.discountPercent;
+
+        const startDate = promo.startDate ? new Date(promo.startDate) : null;
+        const endDate = promo.endDate ? new Date(promo.endDate) : null;
+
+        const isPromoActive =
+          (!startDate || now >= startDate) && (!endDate || now <= endDate);
+
+        if (!isPromoActive) return false;
+
+        return (
+          discount >= filters.promoRange!.min &&
+          discount <= filters.promoRange!.max
+        );
+      });
     }
 
     if (filters.gender) {
@@ -133,7 +157,7 @@ const HomeScreen = () => {
             className="w-full opacity-80"
             resizeMode="cover"
           />
-          <View className="absolute top-10 left-0 right-0 px-6">
+          <View className="absolute top-12 left-0 right-0 px-4">
             <View className="flex-row items-center justify-between mb-6">
               <View>
                 <Text className="text-text-primary text-sm font-semibold">
@@ -163,7 +187,7 @@ const HomeScreen = () => {
           </View>
 
           <View
-            className="px-6 z-10"
+            className="px-4 z-10"
             style={{ position: "absolute", bottom: 16, left: 0, right: 0 }}
           >
             <View className="flex-row items-center gap-2">
@@ -183,6 +207,7 @@ const HomeScreen = () => {
               <TouchableOpacity
                 className="shadow-xl"
                 onPress={() => setFilterVisible(true)}
+                activeOpacity={0.7}
               >
                 <View className="bg-background-light rounded-full p-[14px]">
                   <Image
@@ -205,7 +230,7 @@ const HomeScreen = () => {
 
         {/* Promo Spesial */}
         <View className="mb-6">
-          <Text className="text-text-primary px-6 text-lg font-bold">
+          <Text className="text-text-primary px-4 text-lg font-bold">
             Nikmati Promo Sepuasmu
           </Text>
           {/* Promo Carousel */}
@@ -221,7 +246,7 @@ const HomeScreen = () => {
               }}
             >
               {promoBanner.map((banner, index) => (
-                <View key={index} style={{ width }} className="px-6">
+                <View key={index} style={{ width }} className="px-4">
                   <Image
                     source={banner}
                     className="w-full h-[140px] rounded-2xl shadow-xl"
@@ -231,7 +256,7 @@ const HomeScreen = () => {
               ))}
             </ScrollView>
 
-            {/* Indicator */}
+            {/* Indikator */}
             <View className="flex-row justify-center mt-4 gap-2">
               {promoBanner.map((_, index) => (
                 <View
@@ -248,7 +273,7 @@ const HomeScreen = () => {
         </View>
 
         {/* Filter Kategori */}
-        <View className="px-6 mb-6">
+        <View className="px-4 mb-6">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-text-primary text-lg font-bold">
               Kategori
@@ -271,6 +296,7 @@ const HomeScreen = () => {
                     }))
                   }
                   className={`mx-1 rounded-xl size-20 overflow-hidden items-center justify-center ${isSelected ? "bg-surface" : ""}`}
+                  activeOpacity={0.7}
                 >
                   <Image
                     source={
@@ -293,7 +319,7 @@ const HomeScreen = () => {
         </View>
 
         {/* Produk */}
-        <View className="px-6 mb-3">
+        <View className="px-4 mb-3">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-text-primary text-lg font-bold">
               Jelajahi
@@ -306,6 +332,7 @@ const HomeScreen = () => {
                 {/* Mode Grid */}
                 <TouchableOpacity
                   onPress={() => setViewMode("grid")}
+                  activeOpacity={0.7}
                   className={`p-2 ${viewMode === "grid" ? "bg-primary-purple/10 rounded-lg border border-primary-purple" : ""}`}
                 >
                   <Image
@@ -318,6 +345,7 @@ const HomeScreen = () => {
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
+                  activeOpacity={0.7}
                   onPress={() => setViewMode("list")}
                   className={`p-2 ${viewMode === "list" ? "bg-primary-purple/10 rounded-lg border border-primary-purple" : ""}`}
                 >

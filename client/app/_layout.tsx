@@ -75,7 +75,13 @@ export default Sentry.wrap(function RootLayout() {
       {isLoading ? (
         <PageLoader />
       ) : (
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            statusBarStyle: "light",
+            statusBarTranslucent: true,
+          }}
+        />
       )}
     </QueryClientProvider>
   );

@@ -5,6 +5,12 @@ export const createComment = async (req, res) => {
   try {
     const { productId, comment } = req.body;
 
+    if (!productId) {
+      return res
+        .status(400)
+        .json({ message: "Barang yang diulas harus tersedia." });
+    }
+
     if (!comment) {
       return res.status(400).json({ message: "Komentar tidak boleh kosong." });
     }
@@ -33,8 +39,8 @@ export const getProductComments = async (req, res) => {
       productId,
       isHidden: false,
     })
-      .populate("user", "username imageUrl role")
-      .populate("replies.user", "username role")
+      .populate("userId", "username imageUrl role")
+      .populate("replies.userId", "username role")
       .sort({ createdAt: -1 });
 
     res.status(200).json(comments);
@@ -64,7 +70,7 @@ export const reactToComment = async (req, res) => {
     }
 
     opinion.reactions = opinion.reactions.filter(
-      (c) => c.user.toString() !== req.user._id.toString(),
+      (c) => c.userId.toString() !== req.user._id.toString(),
     );
 
     opinion.reactions.push({
@@ -117,8 +123,23 @@ export const hideComment = async (req, res) => {
   try {
     const { commentId } = req.params;
 
-    await Comment.findByIdAndUpdate(commentId, { isHidden: true });
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Ulasan tidak ditemukan." });
+    }
 
+    if (
+      req.user.role !== "admin" &&
+      comment.userId.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        message:
+          "Maaf, anda tidak memiliki izin untuk menyembunyikan ulasan ini.",
+      });
+    }
+
+    comment.isHidden = true;
+    await comment.save();
     res.status(200).json({ message: "Ulasan disembunyikan." });
   } catch (error) {
     console.error("Error di controller hideComment:", error);

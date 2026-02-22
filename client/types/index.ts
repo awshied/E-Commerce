@@ -39,6 +39,10 @@ export interface ProductFilter {
   gender?: "Campuran" | "Pria" | "Wanita" | "Anak-anak";
   minPrice?: number;
   maxPrice?: number;
+  promoRange?: {
+    min: number;
+    max: number;
+  };
 }
 
 export interface Address {
@@ -154,14 +158,17 @@ export interface Reply {
   _id: string;
   userId: string;
   message: string;
+  createdAt: string;
 }
 
 export interface Comment {
   _id: string;
   productId: string;
-  userId: string;
+  userId: string | User;
   comment: string;
   reactions: Reaction[];
   replies: Reply[];
   isHidden: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

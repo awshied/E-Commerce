@@ -58,6 +58,14 @@ const genders: ProductFilter["gender"][] = [
   "Anak-anak",
 ];
 
+const promoRanges = [
+  { label: "1% - 20%", min: 1, max: 20 },
+  { label: "21% - 40%", min: 21, max: 40 },
+  { label: "41% - 60%", min: 41, max: 60 },
+  { label: "61% - 80%", min: 61, max: 80 },
+  { label: "81% - 100%", min: 81, max: 100 },
+];
+
 const FilterModal = ({
   visible,
   products,
@@ -70,6 +78,13 @@ const FilterModal = ({
     PRICE_MAX,
   ]);
   const [availableTypes, setAvailableTypes] = useState<TypeOption[]>([]);
+  const isFilterActive =
+    !!filters.category ||
+    !!filters.type ||
+    !!filters.gender ||
+    !!filters.promoRange ||
+    priceRange[0] !== PRICE_MIN ||
+    priceRange[1] !== PRICE_MAX;
 
   const handlePriceChange = (values: number[]) => {
     setPriceRange([values[0], values[1]]);
@@ -82,6 +97,12 @@ const FilterModal = ({
       maxPrice: priceRange[1],
     });
     onClose();
+  };
+
+  const handleReset = () => {
+    setFilters({});
+    setPriceRange([PRICE_MIN, PRICE_MAX]);
+    onApply({});
   };
 
   useEffect(() => {
@@ -138,7 +159,11 @@ const FilterModal = ({
                   Filter Barang
                 </Text>
               </View>
-              <TouchableOpacity onPress={onClose} className="items-center mr-2">
+              <TouchableOpacity
+                onPress={onClose}
+                className="items-center mr-2"
+                activeOpacity={0.7}
+              >
                 <Image
                   source={require("../assets/images/icons/close.png")}
                   className="size-5 opacity-70"
@@ -178,6 +203,7 @@ const FilterModal = ({
                             category: isAll ? undefined : cat.name,
                           }))
                         }
+                        activeOpacity={0.7}
                       >
                         <View
                           className={`flex-col justify-center items-center gap-1 p-4 rounded-lg border ${
@@ -279,6 +305,7 @@ const FilterModal = ({
                               type: active ? undefined : t.name,
                             }))
                           }
+                          activeOpacity={0.7}
                           className={`px-4 py-2 rounded-full border ${
                             active
                               ? "bg-primary-purple/10 border-primary-purple"
@@ -299,6 +326,55 @@ const FilterModal = ({
                     })}
                   </View>
                 )}
+              </View>
+
+              {/* Promo Diskon */}
+              {/* Filter Diskon Promo */}
+              <View className="mt-5">
+                <View className="flex-row items-center justify-between">
+                  <Text className="font-bold text-text-primary">
+                    Diskon Promo
+                  </Text>
+                  <Text className="text-text-gray/70 text-sm">
+                    ({promoRanges.length}) Pilihan
+                  </Text>
+                </View>
+
+                <View className="flex-row flex-wrap gap-2 mt-3">
+                  {promoRanges.map((range) => {
+                    const active =
+                      filters.promoRange?.min === range.min &&
+                      filters.promoRange?.max === range.max;
+
+                    return (
+                      <TouchableOpacity
+                        key={range.label}
+                        onPress={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            promoRange: active
+                              ? undefined
+                              : { min: range.min, max: range.max },
+                          }))
+                        }
+                        activeOpacity={0.7}
+                        className={`px-4 py-2 rounded-full border ${
+                          active
+                            ? "bg-primary-purple/10 border-primary-purple"
+                            : "border-text-gray/40"
+                        }`}
+                      >
+                        <Text
+                          className={`text-sm font-semibold ${
+                            active ? "text-primary-purple" : "text-text-gray/70"
+                          }`}
+                        >
+                          {range.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
 
               {/* Kecocokan Barang Berdasarkan Gender */}
@@ -323,6 +399,7 @@ const FilterModal = ({
                             gender: active ? undefined : g,
                           }))
                         }
+                        activeOpacity={0.7}
                         className={`px-4 py-2 rounded-full border ${
                           active
                             ? "bg-primary-purple/10 border-primary-purple"
@@ -343,12 +420,25 @@ const FilterModal = ({
               </View>
             </ScrollView>
 
-            <View className="p-6">
+            <View className="flex-row gap-3 p-6">
+              <TouchableOpacity
+                onPress={handleReset}
+                disabled={!isFilterActive}
+                activeOpacity={0.7}
+                className={`flex-1 rounded-xl items-center ${isFilterActive ? "border border-text-gray/60" : "border border-text-gray/40 opacity-70"}`}
+              >
+                <Text
+                  className={`font-bold py-3 ${isFilterActive ? "text-text-primary" : "text-text-gray/70"}`}
+                >
+                  Atur Ulang
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleApply}
-                className="bg-background-light w-full rounded-xl items-center"
+                activeOpacity={0.7}
+                className="flex-1 bg-background-light rounded-xl items-center"
               >
-                <Text className="font-bold text-text-primary py-4">
+                <Text className="font-bold text-text-primary py-3">
                   Terapkan
                 </Text>
               </TouchableOpacity>
