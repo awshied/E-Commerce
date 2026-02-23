@@ -333,7 +333,7 @@ const HomeScreen = () => {
                 <TouchableOpacity
                   onPress={() => setViewMode("grid")}
                   activeOpacity={0.7}
-                  className={`p-2 ${viewMode === "grid" ? "bg-primary-purple/10 rounded-lg border border-primary-purple" : ""}`}
+                  className={`p-2 ${viewMode === "grid" ? "bg-primary-purple/20 rounded-lg border border-primary-purple" : ""}`}
                 >
                   <Image
                     source={
@@ -347,7 +347,7 @@ const HomeScreen = () => {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => setViewMode("list")}
-                  className={`p-2 ${viewMode === "list" ? "bg-primary-purple/10 rounded-lg border border-primary-purple" : ""}`}
+                  className={`p-2 ${viewMode === "list" ? "bg-primary-purple/20 rounded-lg border border-primary-purple" : ""}`}
                 >
                   <Image
                     source={

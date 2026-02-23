@@ -80,8 +80,12 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
     productName: string,
     size: string,
   ) => {
-    setCartLoading((prev) => ({ ...prev, [productId]: true }));
+    if (!size) {
+      Alert.alert("Pilih ukuran", "Silakan pilih ukuran terlebih dahulu.");
+      return;
+    }
 
+    setCartLoading((prev) => ({ ...prev, [productId]: true }));
     addToCart(
       { productId, size, quantity: 1 },
       {
@@ -107,9 +111,12 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
 
   const renderProduct = ({ item: product }: { item: Product }) => {
     if (!product.sizes.length) return null;
-    const isWishlistLoading = wishlistLoading[product._id];
 
-    const selectedSize = selectedSizes[product._id] || product.sizes[0];
+    const isWishlistLoading = wishlistLoading[product._id];
+    const availableSizes = product.sizes.filter((s) => s.stock > 0);
+    const selectedSize =
+      selectedSizes[product._id] || availableSizes[0] || product.sizes[0];
+    const isOutOfStock = selectedSize?.stock === 0;
     const isCartLoading = cartLoading[product._id];
 
     return (
@@ -121,7 +128,7 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
         <View className="relative">
           <Image
             source={{ uri: product.images?.[0]?.url }}
-            className="h-40 w-28 bg-background-darker"
+            className="h-44 w-32 bg-background-darker"
             resizeMode="cover"
           />
           <View className="absolute bottom-1 left-1 bg-background-light/70 rounded-xl">
@@ -138,7 +145,7 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
         </View>
 
         <View className="flex-1">
-          <View className="p-4">
+          <View className="px-4 py-5">
             <View className="flex-row items-start justify-between">
               <Text
                 className="flex-1 text-text-primary font-extrabold text-lg mb-2 mr-3"
@@ -193,22 +200,32 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
             >
               <View className="flex-row gap-2 pr-2">
                 {product.sizes.map((sizeItem) => {
+                  const isOutOfStock = sizeItem.stock === 0;
                   const isActive = selectedSize.size === sizeItem.size;
 
                   return (
                     <TouchableOpacity
                       key={sizeItem.size}
-                      onPress={() => handleSelectSize(product._id, sizeItem)}
+                      disabled={isOutOfStock}
+                      onPress={() =>
+                        !isOutOfStock && handleSelectSize(product._id, sizeItem)
+                      }
                       activeOpacity={0.7}
                       className={`px-3 py-1 rounded-full border ${
-                        isActive
-                          ? "border-primary-purple bg-primary-purple/10"
-                          : "border-text-gray/40"
+                        isOutOfStock
+                          ? "border-text-gray/10 bg-text-gray/5"
+                          : isActive
+                            ? "border-primary-purple bg-primary-purple/10"
+                            : "border-text-gray/40"
                       }`}
                     >
                       <Text
                         className={`text-[8px] font-bold ${
-                          isActive ? "text-primary-purple" : "text-text-gray/70"
+                          isOutOfStock
+                            ? "text-text-gray/30"
+                            : isActive
+                              ? "text-primary-purple"
+                              : "text-text-gray/70"
                         }`}
                       >
                         {sizeItem.size}
@@ -248,18 +265,21 @@ const ProductList = ({ products, isLoading, isError }: ProductListProps) => {
               </View>
               <TouchableOpacity
                 activeOpacity={0.7}
+                disabled={isCartLoading || isOutOfStock}
                 onPress={() =>
                   handleAddToCart(product._id, product.name, selectedSize.size)
                 }
-                disabled={isCartLoading}
+                className={`shadow-xl ${isOutOfStock ? "opacity-40" : ""}`}
               >
                 {isCartLoading ? (
                   <ActivityIndicator size="small" color="#d2d2d2" />
                 ) : (
-                  <Image
-                    source={require("../assets/images/icons/shopping-cart.png")}
-                    className="size-5"
-                  />
+                  <View className="bg-primary-purple/10 rounded-lg p-1.5 border border-primary-purple">
+                    <Image
+                      source={require("../assets/images/icons/shopping-cart.png")}
+                      className="size-6"
+                    />
+                  </View>
                 )}
               </TouchableOpacity>
             </View>

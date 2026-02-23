@@ -35,6 +35,7 @@ const useCart = () => {
     isLoading: cartQuery.isLoading,
     error: cartQuery.error,
     addToCart: addToCartMutation.mutate,
+    isAddingToCart: addToCartMutation.isPending,
   };
 };
 

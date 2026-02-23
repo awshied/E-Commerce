@@ -107,8 +107,12 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
 
   const renderProduct = ({ item: product }: { item: Product }) => {
     if (!product.sizes.length) return null;
+
     const isWishlistLoading = wishlistLoading[product._id];
-    const selectedSize = selectedSizes[product._id] || product.sizes[0];
+    const availableSizes = product.sizes.filter((s) => s.stock > 0);
+    const selectedSize =
+      selectedSizes[product._id] || availableSizes[0] || product.sizes[0];
+    const isOutOfStock = selectedSize?.stock === 0;
     const isCartLoading = cartLoading[product._id];
 
     return (
@@ -154,8 +158,8 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
           </View>
         </View>
 
-        <View className="p-3">
-          <View className="flex-row items-center justify-between">
+        <View className="py-3 px-2">
+          <View className="flex-row items-center justify-between px-1">
             <Text className="text-text-gray/70 text-xs font-bold mb-1">
               {product.category}
             </Text>
@@ -173,7 +177,7 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
             </View>
           </View>
           <Text
-            className="text-text-primary font-extrabold text-base mb-2 mt-1"
+            className="text-text-primary font-extrabold text-base mb-2 mt-1 px-1"
             numberOfLines={2}
           >
             {product.name}
@@ -184,24 +188,34 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
             showsHorizontalScrollIndicator={false}
             className="mb-2"
           >
-            <View className="flex-row gap-2 pr-2">
+            <View className="flex-row gap-2 pr-2 pl-1">
               {product.sizes.map((sizeItem) => {
+                const isOutOfStock = sizeItem.stock === 0;
                 const isActive = selectedSize.size === sizeItem.size;
 
                 return (
                   <TouchableOpacity
                     key={sizeItem.size}
-                    onPress={() => handleSelectSize(product._id, sizeItem)}
+                    disabled={isOutOfStock}
+                    onPress={() =>
+                      !isOutOfStock && handleSelectSize(product._id, sizeItem)
+                    }
                     activeOpacity={0.7}
                     className={`px-3 py-1 rounded-full border ${
-                      isActive
-                        ? "border-primary-purple bg-primary-purple/10"
-                        : "border-text-gray/40"
+                      isOutOfStock
+                        ? "border-text-gray/10 bg-text-gray/5"
+                        : isActive
+                          ? "border-primary-purple bg-primary-purple/10"
+                          : "border-text-gray/40"
                     }`}
                   >
                     <Text
                       className={`text-xs font-bold ${
-                        isActive ? "text-primary-purple" : "text-text-gray/70"
+                        isOutOfStock
+                          ? "text-text-gray/30"
+                          : isActive
+                            ? "text-primary-purple"
+                            : "text-text-gray/70"
                       }`}
                     >
                       {sizeItem.size}
@@ -213,7 +227,7 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
           </ScrollView>
 
           {/* Harga */}
-          <View className="mt-2">
+          <View className="mt-2 px-1">
             {isPromoActive(product.promo) ? (
               <View>
                 {/* Harga Asli */}
@@ -254,25 +268,21 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
             )}
           </View>
           <TouchableOpacity
-            className="bg-background rounded-md w-full flex-row items-center border border-primary-purple justify-center mt-3"
+            className={`bg-primary-purple/10 border border-primary-purple rounded-md w-full flex-row items-center justify-center mt-3 ${
+              isOutOfStock ? "opacity-40" : ""
+            }`}
             activeOpacity={0.7}
             onPress={() =>
               handleAddToCart(product._id, product.name, selectedSize.size)
             }
-            disabled={isCartLoading}
+            disabled={isCartLoading || isOutOfStock}
           >
             {isCartLoading ? (
               <ActivityIndicator size="small" color="#d2d2d2" />
             ) : (
-              <View className="flex-row items-center justify-center px-4 py-2 gap-2">
-                <Image
-                  source={require("../assets/images/icons/shopping-cart.png")}
-                  className="size-4"
-                />
-                <Text className="text-xs font-semibold text-text-primary">
-                  Keranjang
-                </Text>
-              </View>
+              <Text className="text-sm py-2 font-semibold text-primary-purple">
+                Keranjang
+              </Text>
             )}
           </TouchableOpacity>
         </View>

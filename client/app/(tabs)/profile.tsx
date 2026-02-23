@@ -1,16 +1,8 @@
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import SafeScreen from "@/components/SafeScreen";
 import { useAuthStore } from "@/store/useAuthStore";
 import { router } from "expo-router";
-import HeaderShown from "@/components/HeaderShown";
 import LogoutConfirmModal from "@/components/LogoutConfirmModal";
 
 const menuItems = [
@@ -65,7 +57,7 @@ const ProfileScreen = () => {
   const logout = useAuthStore((state) => state.logout);
 
   const handleMenuPress = (action: (typeof menuItems)[number]["action"]) => {
-    // router.push(action)
+    router.push(action);
   };
 
   const handleLogout = () => {
@@ -85,8 +77,17 @@ const ProfileScreen = () => {
   };
   return (
     <SafeScreen>
-      <View className="shadow-xl">
-        <HeaderShown title="Profil Anda" />
+      {/* Header */}
+      <View className="px-4 py-3 mt-8 bg-background border-b border-background-light flex-row items-center gap-3">
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+          <Image
+            source={require("../../assets/images/icons/arrow-left.png")}
+            className="size-6"
+          />
+        </TouchableOpacity>
+        <Text className="text-center text-xl font-bold text-text-primary">
+          Profil Anda
+        </Text>
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 my-6">
@@ -116,10 +117,21 @@ const ProfileScreen = () => {
                   alt="icon"
                   className="size-3"
                 />
-                <Text className="text-xs font-semibold text-text-gray/70 mt-0.5">
-                  {user?.addresses?.[0]?.city ?? "Belum Diatur"},{" "}
-                  {user?.addresses?.[0]?.province ?? ""}
-                </Text>
+                {user?.addresses?.[0]?.city ||
+                user?.addresses?.[0]?.province ? (
+                  <Text className="text-xs font-semibold text-text-gray/70 mt-0.5">
+                    {[
+                      user?.addresses?.[0]?.city,
+                      user?.addresses?.[0]?.province,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </Text>
+                ) : (
+                  <Text className="text-xs font-semibold text-text-gray/70 mt-0.5">
+                    Belum Diatur
+                  </Text>
+                )}
               </View>
               <View className="flex-row gap-2 items-center">
                 <Image
@@ -171,6 +183,7 @@ const ProfileScreen = () => {
             <TouchableOpacity
               className="flex-row items-center justify-between p-4 bg-background-light rounded-xl shadow-xl"
               activeOpacity={0.7}
+              onPress={() => router.push("/account")}
             >
               <View className="flex-row gap-4 items-center">
                 <Image
