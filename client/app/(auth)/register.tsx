@@ -3,13 +3,13 @@ import {
   Image,
   Text,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { Link, router } from "expo-router";
 
 import FloatingInput from "@/components/FloatingInput";
+import CustomAlert from "@/components/CustomAlert";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const RegisterScreen = () => {
@@ -19,40 +19,74 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error" | "info">(
+    "info",
+  );
+  const [onAlertClose, setOnAlertClose] = useState<() => void>(() => {});
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: "success" | "error" | "info" = "info",
+    onClose?: () => void,
+  ) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertType(type);
+    setOnAlertClose(() => onClose || (() => {}));
+    setAlertVisible(true);
+  };
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
-      Alert.alert("Oops!", "Semua field tidak boleh kosong.");
+      showAlert("Oops!", "Semua field tidak boleh kosong.", "error");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert("Email tidak valid", "Masukkan alamat email yang benar.");
+      showAlert(
+        "Email tidak valid",
+        "Masukkan alamat email dengan format yang benar.",
+        "error",
+      );
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert("Kata sandi lemah", "Minimal harus ada 8 karakter.");
+      showAlert(
+        "Kata sandi lemah",
+        "Minimal kata sandi harus ada 8 karakter.",
+        "error",
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Kata sandi tidak cocok", "Cek ulang kata sandi kamu.");
+      showAlert(
+        "Kata sandi tidak cocok",
+        "Mohon untuk cek ulang kata sandi kamu.",
+        "error",
+      );
       return;
     }
 
     try {
       await register({ username, email, password });
 
-      Alert.alert(
-        "Yeah!",
-        "Anda baru saja bergabung di GlacioCore bersama kami.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)") }],
+      showAlert(
+        "Yeay!",
+        "Akun baru kamu berhasil dibuat. Mohon untuk selalu diingat baik-baik.",
+        "success",
+        () => router.replace("/(auth)"),
       );
     } catch (error: any) {
-      const message = error?.response?.data?.message || "Gagal registrasi.";
-      Alert.alert("Registrasi gagal", message);
+      const message =
+        error?.response?.data?.message || "Gagal melakukan registrasi.";
+      showAlert("Registrasi Gagal", message, "error");
     }
   };
 
@@ -124,15 +158,31 @@ const RegisterScreen = () => {
       </TouchableOpacity>
 
       <View className="flex-row justify-center mt-6">
-        <Text className="text-gray-400 text-sm">Sudah punya akun?</Text>
+        <Text className="text-text-gray/70 text-sm">Sudah punya akun?</Text>
         <Link href="." asChild>
           <TouchableOpacity>
-            <Text className="text-indigo-400 text-sm ml-1 font-semibold">
+            <Text className="text-primary-purple text-sm ml-1 font-semibold">
               Login
             </Text>
           </TouchableOpacity>
         </Link>
       </View>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        buttons={[
+          {
+            text: "Lanjut",
+            onPress: () => {
+              setAlertVisible(false);
+              onAlertClose();
+            },
+          },
+        ]}
+      />
     </View>
   );
 };

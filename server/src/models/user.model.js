@@ -56,10 +56,24 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 8,
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
+    birthday: {
+      type: Date,
+    },
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    gender: {
+      type: String,
+      enum: ["N/A", "Pria", "Wanita"],
+      default: "N/A",
     },
     imageUrl: {
       type: String,

@@ -1,6 +1,7 @@
 import { generateToken } from "../lib/utils.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import cloudinary from "../config/cloudinary.js";
 import { Notification } from "../models/notification.model.js";
 
@@ -96,7 +97,11 @@ export const login = async (req, res) => {
           _id: user._id,
           username: user.username,
           email: user.email,
+          resetPasswordToken: user.resetPasswordToken,
+          resetPasswordExpires: user.resetPasswordExpires,
+          birthday: user.birthday,
           role: user.role,
+          gender: user.gender,
           imageUrl: user.imageUrl,
           addresses: user.addresses,
           wishlist: user.wishlist,
@@ -107,6 +112,83 @@ export const login = async (req, res) => {
       });
   } catch (error) {
     console.error("Error di controller login:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Meminta untuk Mengatur Ulang Token
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) return res.status(400).json({ message: "Email wajib diisi." });
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "Email tidak ditemukan." });
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Token reset password berhasil dibuat.",
+      resetToken: rawToken,
+    });
+  } catch (error) {
+    console.error("Error request reset:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Mengatur Ulang Password dengan Token
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword)
+    return res
+      .status(400)
+      .json({ message: "Alamat email dan password baru wajib diisi." });
+
+  try {
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user)
+      return res.status(400).json({
+        message: "Token tidak valid atau sudah kadaluarsa.",
+      });
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        message: "Password minimal 8 karakter.",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password berhasil diperbarui.",
+    });
+  } catch (error) {
+    console.error("Error reset password:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

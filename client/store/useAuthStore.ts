@@ -15,6 +15,15 @@ interface RegisterPayload {
   password: string;
 }
 
+interface ForgotPasswordPayload {
+  email: string;
+}
+
+interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+}
+
 interface UpdateProfilePayload {
   imageUrl: string;
 }
@@ -26,6 +35,8 @@ interface AuthState {
   checkAuth: () => Promise<void>;
   login: (data: LoginPayload) => Promise<void>;
   register: (data: RegisterPayload) => Promise<void>;
+  forgotPassword: (data: ForgotPasswordPayload) => Promise<string>;
+  resetPassword: (data: ResetPasswordPayload) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: UpdateProfilePayload) => Promise<void>;
 }
@@ -76,11 +87,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  forgotPassword: async (data): Promise<string> => {
+    const res = await axiosInstance.post("/auth/forgot-password", data);
+    return res.data.resetToken;
+  },
+
+  resetPassword: async (data) => {
+    await axiosInstance.post("/auth/reset-password", data);
+  },
+
   logout: async () => {
     try {
       await axiosInstance.post("/auth/logout");
     } catch {
-      // best-effort: server gagal, tapi client tetap logout
     } finally {
       await removeToken();
       set({ user: null });

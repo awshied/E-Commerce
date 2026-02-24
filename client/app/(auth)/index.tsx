@@ -35,7 +35,7 @@ const AuthScreen = () => {
   };
 
   return (
-    <View className="px-8 flex-1 items-center justify-center bg-[#0f172a]">
+    <View className="px-8 flex-1 items-center justify-center bg-background">
       <View className="items-center mb-8">
         <Image
           source={require("../../assets/images/logo-web.png")}
@@ -68,6 +68,14 @@ const AuthScreen = () => {
           secureTextEntry
           icon={require("../../assets/images/icons/password.png")}
         />
+
+        <Link href="forgotPassword" asChild>
+          <TouchableOpacity className="self-end">
+            <Text className="text-primary-purple text-sm font-semibold">
+              Lupa Kata Sandi?
+            </Text>
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <TouchableOpacity
@@ -87,10 +95,10 @@ const AuthScreen = () => {
       </TouchableOpacity>
 
       <View className="flex-row justify-center mt-6">
-        <Text className="text-gray-400 text-sm">Belum punya akun?</Text>
+        <Text className="text-text-gray/70 text-sm">Belum punya akun?</Text>
         <Link href="register" asChild>
           <TouchableOpacity>
-            <Text className="text-indigo-400 text-sm ml-1 font-semibold">
+            <Text className="text-primary-purple text-sm ml-1 font-semibold">
               Daftar
             </Text>
           </TouchableOpacity>

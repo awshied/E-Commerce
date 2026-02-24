@@ -60,11 +60,16 @@ export interface Address {
 
 export type UserRole = "user" | "admin";
 
+export type UserGender = "N/A" | "Pria" | "Wanita";
+
 export interface User {
   _id: string;
   username: string;
   email: string;
+  resetPasswordExpires: Date;
+  birthday: Date;
   role: UserRole;
+  gender: UserGender;
   imageUrl: string;
   addresses: Address[];
   wishlist: string[];
