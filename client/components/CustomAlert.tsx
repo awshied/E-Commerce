@@ -38,11 +38,13 @@ const CustomAlert = ({
   return (
     <Modal transparent animationType="fade" visible={visible}>
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View style={styles.container} accessibilityViewIsModal>
           <Image
             source={alertImages[type]}
             style={styles.image}
             resizeMode="contain"
+            accessibilityLabel={`${type} alert icon`}
+            accessible={true}
           />
 
           <Text style={styles.title}>{title}</Text>

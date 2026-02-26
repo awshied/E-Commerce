@@ -14,8 +14,25 @@ const ResetPasswordScreen = () => {
   const [confirm, setConfirm] = useState("");
   const [alertVisible, setAlertVisible] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleReset = async () => {
+    if (!tokenParam) {
+      return (
+        <View className="flex-1 bg-background px-8 justify-center">
+          <Text className="text-white">
+            Link tidak valid atau sudah kedaluwarsa.
+          </Text>
+        </View>
+      );
+    }
+
+    if (!password || password.length < 8) {
+      setSuccess(false);
+      setAlertVisible(true);
+      return;
+    }
+
     if (password !== confirm) {
       setSuccess(false);
       setAlertVisible(true);
@@ -31,6 +48,11 @@ const ResetPasswordScreen = () => {
       setAlertVisible(true);
     } catch (err) {
       setSuccess(false);
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan. Silakan coba lagi.",
+      );
       setAlertVisible(true);
     }
   };
@@ -80,7 +102,7 @@ const ResetPasswordScreen = () => {
         message={
           success
             ? "Mohon diingat baik-baik kata sandi baru Anda. Jangan sampai Anda melupakan kata sandi Anda lagi."
-            : "Kata sandi yang Anda masukkan tidak sesuai."
+            : errorMessage || "Kata sandi yang Anda masukkan tidak sesuai."
         }
         type={success ? "success" : "error"}
         buttons={[

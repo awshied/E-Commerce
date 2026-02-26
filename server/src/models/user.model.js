@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const addressSchema = new mongoose.Schema({
+  label: {
+    type: String,
+    enum: ["rumah", "apartemen", "hotel", "kantor"],
+    default: "rumah",
+  },
   fullName: {
     type: String,
     required: true,
@@ -64,6 +69,11 @@ const userSchema = new mongoose.Schema(
     },
     birthday: {
       type: Date,
+      validate: {
+        validator: (v) =>
+          !v || (v <= new Date() && v >= new Date("1900-01-01")),
+        message: "Birthday must be a past date after 1900-01-01",
+      },
     },
     role: {
       type: String,
@@ -72,8 +82,8 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["N/A", "Pria", "Wanita"],
-      default: "N/A",
+      enum: ["unknown", "pria", "wanita"],
+      default: "unknown",
     },
     imageUrl: {
       type: String,

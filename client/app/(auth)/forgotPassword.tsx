@@ -13,11 +13,13 @@ const ForgotPasswordScreen = () => {
   const [token, setToken] = useState("");
 
   const handleSubmit = async () => {
+    if (!email.trim()) return;
+
     try {
       const resetToken = await forgotPassword({ email });
       setToken(resetToken);
       setAlertVisible(true);
-    } catch (err: any) {
+    } catch {
       setToken("");
       setAlertVisible(true);
     }
@@ -85,6 +87,7 @@ const ForgotPasswordScreen = () => {
                   text: "Atur Ulang",
                   onPress: () => {
                     setAlertVisible(false);
+                    setToken("");
                     router.push({
                       pathname: "/(auth)/resetPassword",
                       params: { token },

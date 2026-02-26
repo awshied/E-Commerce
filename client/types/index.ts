@@ -47,6 +47,7 @@ export interface ProductFilter {
 
 export interface Address {
   _id?: string;
+  label: "rumah" | "apartemen" | "hotel" | "kantor";
   fullName: string;
   streetAddress: string;
   village: string;
@@ -60,14 +61,13 @@ export interface Address {
 
 export type UserRole = "user" | "admin";
 
-export type UserGender = "N/A" | "Pria" | "Wanita";
+export type UserGender = "unknown" | "pria" | "wanita";
 
 export interface User {
   _id: string;
   username: string;
   email: string;
-  resetPasswordExpires: Date;
-  birthday: Date;
+  birthday?: string;
   role: UserRole;
   gender: UserGender;
   imageUrl: string;

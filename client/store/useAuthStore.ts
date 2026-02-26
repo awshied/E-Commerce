@@ -26,6 +26,9 @@ interface ResetPasswordPayload {
 
 interface UpdateProfilePayload {
   imageUrl: string;
+  username: string;
+  birthday?: string;
+  gender?: "unknown" | "pria" | "wanita";
 }
 
 interface AuthState {
@@ -107,7 +110,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   updateProfile: async (data) => {
-    const res = await axiosInstance.put("/auth/update-profile", data);
-    set({ user: res.data });
+    try {
+      const res = await axiosInstance.put("/auth/update-profile", data);
+      set((state) => ({
+        user: {
+          ...state.user,
+          ...res.data.user,
+        },
+      }));
+    } catch (error: any) {
+      throw error;
+    }
   },
 }));

@@ -6,6 +6,7 @@ import { User } from "../models/user.model.js";
 export const addAddress = async (req, res) => {
   try {
     const {
+      label,
       fullName,
       streetAddress,
       village,
@@ -26,7 +27,8 @@ export const addAddress = async (req, res) => {
       !district ||
       !city ||
       !zipCode ||
-      !province
+      !province ||
+      !phoneNumber
     ) {
       return res
         .status(400)
@@ -40,6 +42,7 @@ export const addAddress = async (req, res) => {
     }
 
     user.addresses.push({
+      label: label || "rumah",
       fullName,
       streetAddress,
       village,
@@ -53,7 +56,7 @@ export const addAddress = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
+    res.status(201).json({
       message: "Alamat telah ditambahkan.",
       addresses: user.addresses,
     });
@@ -79,6 +82,7 @@ export const getAddress = async (req, res) => {
 export const updateAddress = async (req, res) => {
   try {
     const {
+      label,
       fullName,
       streetAddress,
       village,
@@ -104,6 +108,7 @@ export const updateAddress = async (req, res) => {
       });
     }
 
+    address.label = label ?? address.label;
     address.fullName = fullName || address.fullName;
     address.streetAddress = streetAddress || address.streetAddress;
     address.village = village || address.village;
@@ -130,6 +135,11 @@ export const deleteAddress = async (req, res) => {
   try {
     const { addressId } = req.params;
     const user = req.user;
+
+    const address = user.addresses.id(addressId);
+    if (!address) {
+      return res.status(404).json({ error: "Alamat tidak ditemukan." });
+    }
 
     user.addresses.pull(addressId);
     await user.save();
@@ -159,6 +169,8 @@ export const addToWishlist = async (req, res) => {
     }
 
     user.wishlist.push(productId);
+    await user.save();
+
     await Notification.create({
       type: "wishlist",
       title: "Favorit Baru",
@@ -166,9 +178,6 @@ export const addToWishlist = async (req, res) => {
       relatedUser: user._id,
       relatedProduct: product._id,
     });
-
-    await user.save();
-
     res.status(200).json({
       message: "Produk telah ditambahkan sebagai favorit.",
       wishlist: user.wishlist,

@@ -5,6 +5,7 @@ import { PlusIcon, XIcon } from "lucide-react";
 
 import { productApi } from "../lib/api";
 import productManagement from "../assets/icons/product-management.png";
+import productAdd from "../assets/icons/product-add.png";
 import productEdit from "../assets/icons/product-edit.png";
 import trash from "../assets/icons/trash.png";
 import productCategory from "../assets/icons/product-category.png";
@@ -16,6 +17,8 @@ import productPrice from "../assets/icons/product-price.png";
 import productStock from "../assets/icons/product-stock.png";
 import productSize from "../assets/icons/product-size.png";
 import productDescription from "../assets/icons/product-description.png";
+import productPromoTitle from "../assets/icons/product-promo.png";
+import productDiscount from "../assets/icons/product-discount.png";
 import FloatingInput from "../components/FloatingInput";
 
 const ProductsPage = () => {
@@ -173,6 +176,29 @@ const ProductsPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (enablePromo) {
+      const { title, discountPercent, startDate, endDate } = formData.promo;
+
+      if (!title.trim()) {
+        return alert("Nama promo wajib diisi.");
+      }
+
+      if (!discountPercent || Number(discountPercent) <= 0) {
+        return alert("Diskon harus lebih dari 0%.");
+      }
+
+      if (!startDate || !endDate) {
+        return alert("Tanggal mulai dan berakhir wajib diisi.");
+      }
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (end < start) {
+        return alert("Tanggal berakhir tidak boleh sebelum tanggal mulai.");
+      }
+    }
+
     if (!editingProduct && imagePreviews.length === 0) {
       return alert("Wajib unggah minimal 1 gambar.");
     }
@@ -285,26 +311,28 @@ const ProductsPage = () => {
                 return (
                   <div key={product._id} className="card bg-base-300">
                     <div className="card-body">
-                      <div className="flex items-center gap-6">
-                        <div className="avatar">
-                          <div className="w-44 rounded-xl relative">
-                            {isPromoActive(product.promo) && (
-                              <span className="absolute bottom-1 left-1 badge badge-base-300 py-4 font-bold text-[#ffc586]">
-                                {product.promo.title}
-                              </span>
-                            )}
-                            <img
-                              src={
-                                product.images?.[0]?.url || "/placeholder.png"
-                              }
-                              alt={product.name}
-                            />
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        <div className="flex-none">
+                          <div className="avatar">
+                            <div className="w-46 rounded-xl relative">
+                              {isPromoActive(product.promo) && (
+                                <span className="absolute bottom-1 left-1 badge badge-base-300 py-4 font-bold text-[#ffc586]">
+                                  {product.promo.title}
+                                </span>
+                              )}
+                              <img
+                                src={
+                                  product.images?.[0]?.url || "/placeholder.png"
+                                }
+                                alt={product.name}
+                              />
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex flex-col gap-2">
-                            <div className="flex gap-6">
+                            <div className="flex items-center gap-3 flex-wrap">
                               <h3 className="card-title text-3xl font-extrabold">
                                 {product.name}
                               </h3>
@@ -314,12 +342,13 @@ const ProductsPage = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-start gap-8">
-                              <div className="flex items-center gap-2">
+
+                            <div className="flex flex-wrap items-center gap-4 mt-2">
+                              <div className="flex items-center gap-1.5">
                                 <img
                                   src={productCategory}
                                   alt={productCategory}
-                                  className="w-4 h-4"
+                                  className="w-4 h-4 opacity-70"
                                 />
                                 <p className="text-base-content text-sm font-semibold">
                                   {product.category}
@@ -365,62 +394,90 @@ const ProductsPage = () => {
                                 </div>
                               )}
                             </div>
-                            <div className="flex flex-col items-start gap-1 mt-2">
-                              <p className="text-xs font-bold text-base-content/70">
-                                Ukuran
-                              </p>
 
-                              <div
-                                className="grid gap-4"
-                                style={{
-                                  gridTemplateColumns: `repeat(${product.sizes.length}, minmax(0, 1fr))`,
-                                }}
-                              >
-                                {product.sizes?.map((item, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex flex-col gap-2"
-                                  >
-                                    <div className="flex gap-2">
-                                      <span className="text-sm font-bold text-base-content/70">
-                                        {item.size} :
-                                      </span>
-                                      <span className="text-sm font-semibold">
-                                        {item.stock}
-                                        <span className="text-xs text-base-content/70 font-bold">
-                                          {" "}
-                                          pcs
-                                        </span>
-                                      </span>
-                                    </div>
-                                    {isPromoActive(product.promo) ? (
-                                      <div className="flex flex-col gap-0.5">
-                                        <span className="text-xs font-semibold line-through text-base-content/50">
-                                          Rp.{" "}
-                                          {item.price.toLocaleString("id-ID")}
-                                        </span>
+                            <div className="relative w-full mt-3">
+                              <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-base-300 to-transparent pointer-events-none z-10" />
 
-                                        <span className="text-base font-bold text-[#ffc586]">
-                                          Rp.{" "}
-                                          {getDiscountedPrice(
-                                            item.price,
-                                            product.promo.discountPercent,
-                                          ).toLocaleString("id-ID")}
-                                        </span>
+                              <div className="overflow-x-auto pb-3 -mb-3 no-scrollbar">
+                                <div className="flex gap-3">
+                                  {product.sizes?.map((item, index) => {
+                                    const hasPromo = isPromoActive(
+                                      product.promo,
+                                    );
+                                    const finalPrice = hasPromo
+                                      ? getDiscountedPrice(
+                                          item.price,
+                                          product.promo.discountPercent,
+                                        )
+                                      : item.price;
+                                    return (
+                                      <div
+                                        key={index}
+                                        className="flex-none w-48 bg-base-200 rounded-xl p-3 shadow-2xl"
+                                      >
+                                        <div className="flex items-center justify-between mb-4">
+                                          <span className="text-base font-bold text-base-content/70">
+                                            {item.size}
+                                          </span>
+                                          <span
+                                            className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                              item.stock > 0
+                                                ? "bg-secondary/20 text-secondary"
+                                                : "bg-error/20 text-error"
+                                            }`}
+                                          >
+                                            {item.stock > 0
+                                              ? `${item.stock} stok`
+                                              : "Habis"}
+                                          </span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                          {hasPromo ? (
+                                            <div className="flex flex-col gap-0.5">
+                                              <span className="text-xs font-semibold line-through text-base-content/50">
+                                                Rp.{" "}
+                                                {item.price.toLocaleString(
+                                                  "id-ID",
+                                                )}
+                                              </span>
+
+                                              <div className="flex items-start gap-2">
+                                                <span className="text-xl font-extrabold text-[#ffc586]">
+                                                  Rp.{" "}
+                                                  {finalPrice.toLocaleString(
+                                                    "id-ID",
+                                                  )}{" "}
+                                                </span>
+                                                <p className="text-sm text-base-content/70 font-semibold">
+                                                  / Pcs
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-start gap-2">
+                                              <span className="text-xl font-extrabold text-white">
+                                                Rp.{" "}
+                                                {item.price.toLocaleString(
+                                                  "id-ID",
+                                                )}{" "}
+                                              </span>
+                                              <p className="text-sm text-base-content/70 font-semibold">
+                                                / Pcs
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                    ) : (
-                                      <span className="text-base font-bold text-secondary">
-                                        Rp. {item.price.toLocaleString("id-ID")}
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        <div className="card-actions mr-2">
+                        <div className="flex flex-col gap-2 shrink-0 justify-center">
                           <button
                             className="btn btn-square btn-ghost"
                             onClick={() => handleEdit(product)}
@@ -473,26 +530,41 @@ const ProductsPage = () => {
         readOnly
       />
       <div className="modal">
-        <div className="modal-box max-w-400">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold text-2xl">
-              {editingProduct ? "Ubah Produk" : "Tambah Produk Baru"}
-            </h3>
-            <button
-              onClick={closeModal}
-              className="btn btn-sm btn-circle btn-ghost"
-            >
-              <XIcon className="w-5 h-5" />
-            </button>
+        <div className="modal-box max-h-[94vh] max-w-6xl p-0 overflow-hidden bg-base-100">
+          <div className="relative px-6">
+            <div className="flex items-center justify-between border-b border-base-content/50">
+              <div className="flex items-center gap-3">
+                <img
+                  src={editingProduct ? productEdit : productAdd}
+                  className="size-9"
+                  alt="Product Icon"
+                />
+                <h3 className="text-xl font-bold text-base-content py-6">
+                  {editingProduct ? "Edit Produk" : "Tambah Produk Baru"}
+                </h3>
+              </div>
+
+              <button
+                onClick={closeModal}
+                className="btn btn-circle btn-ghost btn-sm hover:bg-base-300/50"
+              >
+                <XIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <hr className="w-full border border-neutral my-4" />
-          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-            <div className="grid grid-cols-2 gap-12">
-              <div className="space-y-6 mt-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="form-control">
+
+          <form onSubmit={handleSubmit}>
+            <div className="max-h-[70vh] overflow-y-auto px-8 py-6 scrollbar-hide">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-primary rounded-full"></div>
+                    <h4 className="font-semibold text-lg">Informasi Dasar</h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FloatingInput
-                      label="Nama"
+                      label="Nama Produk"
                       name="name"
                       type="text"
                       icon={productName}
@@ -502,28 +574,9 @@ const ProductsPage = () => {
                       }
                       required
                     />
-                  </div>
-                  <div className="form-control">
-                    <select
-                      className="select select-bordered"
-                      value={formData.category}
-                      onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
-                      }
-                      required
-                    >
-                      <option value="">Pilih Kategori</option>
-                      <option value="Pakaian">Pakaian</option>
-                      <option value="Aksesoris">Aksesoris</option>
-                      <option value="Elektronik">Elektronik</option>
-                      <option value="Kosmetik">Kosmetik</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="form-control">
+
                     <FloatingInput
-                      label="Jenis"
+                      label="Jenis Produk"
                       name="type"
                       type="text"
                       icon={productType}
@@ -533,212 +586,365 @@ const ProductsPage = () => {
                       }
                       required
                     />
-                  </div>
-                  <div className="form-control">
-                    <select
-                      className="select select-bordered"
-                      value={formData.gender}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gender: e.target.value })
-                      }
-                      required
-                    >
-                      <option value="Campuran">Campuran</option>
-                      <option value="Pria">Pria</option>
-                      <option value="Wanita">Wanita</option>
-                      <option value="Anak-anak">Anak-anak</option>
-                    </select>
+
+                    <div className="form-control">
+                      <label className="label mb-3">
+                        <span className="label-text text-base-content font-medium flex items-center gap-2">
+                          <img
+                            src={productCategory}
+                            alt=""
+                            className="w-5 h-5"
+                          />
+                          Kategori
+                        </span>
+                      </label>
+                      <select
+                        className="select select-bordered w-full bg-base-300 focus:bg-base-300 transition-colors shadow-2xl"
+                        value={formData.category}
+                        onChange={(e) =>
+                          setFormData({ ...formData, category: e.target.value })
+                        }
+                        required
+                      >
+                        <option value="" disabled>
+                          Pilih kategori
+                        </option>
+                        <option value="Pakaian">👕 Pakaian</option>
+                        <option value="Aksesoris">🕶️ Aksesoris</option>
+                        <option value="Elektronik">📱 Elektronik</option>
+                        <option value="Kosmetik">💄 Kosmetik</option>
+                      </select>
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label mb-3">
+                        <span className="label-text text-base-content font-medium flex items-center gap-2">
+                          <img
+                            src={productGenderFit}
+                            alt=""
+                            className="w-5 h-5"
+                          />
+                          Cocok Untuk
+                        </span>
+                      </label>
+                      <select
+                        className="select select-bordered w-full bg-base-300 focus:bg-base-300 transition-colors shadow-2xl"
+                        value={formData.gender}
+                        onChange={(e) =>
+                          setFormData({ ...formData, gender: e.target.value })
+                        }
+                        required
+                      >
+                        <option value="Campuran">👥 Campuran (Unisex)</option>
+                        <option value="Pria">👨 Pria</option>
+                        <option value="Wanita">👩 Wanita</option>
+                        <option value="Anak-anak">🧒 Anak-anak</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
-                {formData.sizes.map((item, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-[100px_1fr_1fr_40px] gap-4 items-center"
-                  >
-                    <div className="form-control">
-                      <FloatingInput
-                        label="Ukuran"
-                        name="size"
-                        type="text"
-                        icon={productSize}
-                        value={item.size}
-                        onChange={(e) =>
-                          handleSizeChange(index, "size", e.target.value)
-                        }
-                      />
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-6 bg-accent rounded-full"></div>
+                      <h4 className="font-semibold text-lg">Varian Produk</h4>
                     </div>
-                    <div className="form-control">
-                      <FloatingInput
-                        label="Harga (Rp)"
-                        name="price"
-                        type="number"
-                        icon={productPrice}
-                        value={item.price}
-                        onChange={(e) =>
-                          handleSizeChange(index, "price", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="form-control">
-                      <FloatingInput
-                        label="Stok"
-                        name="stock"
-                        type="number"
-                        icon={productStock}
-                        value={item.stock}
-                        onChange={(e) =>
-                          handleSizeChange(index, "stock", e.target.value)
-                        }
-                      />
-                    </div>
+                    <span className="text-xs text-base-content/70 bg-base-300 px-4 py-2 font-semibold rounded-full">
+                      Minimal 1 varian
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {formData.sizes.map((item, index) => (
+                      <div
+                        key={index}
+                        className="grid grid-cols-[1fr_1fr_1fr_40px] gap-3 items-center p-4 bg-base-200/30 rounded-xl border border-base-200 hover:border-accent/30 transition-all"
+                      >
+                        <FloatingInput
+                          label="Ukuran"
+                          name={`size-${index}`}
+                          type="text"
+                          icon={productSize}
+                          value={item.size}
+                          onChange={(e) =>
+                            handleSizeChange(index, "size", e.target.value)
+                          }
+                        />
+                        <FloatingInput
+                          label="Harga"
+                          name={`price-${index}`}
+                          type="number"
+                          icon={productPrice}
+                          value={item.price}
+                          onChange={(e) =>
+                            handleSizeChange(index, "price", e.target.value)
+                          }
+                        />
+                        <FloatingInput
+                          label="Stok"
+                          name={`stock-${index}`}
+                          type="number"
+                          icon={productStock}
+                          value={item.stock}
+                          onChange={(e) =>
+                            handleSizeChange(index, "stock", e.target.value)
+                          }
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSizeRow(index)}
+                          className="btn btn-circle btn-ghost btn-sm text-error/70 hover:text-error hover:bg-error/10 mt-6 cursor-pointer"
+                          disabled={formData.sizes.length === 1}
+                          title="Hapus varian"
+                        >
+                          <XIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+
                     <button
                       type="button"
-                      onClick={() => removeSizeRow(index)}
-                      className="btn btn-ghost btn-sm text-error"
-                      disabled={formData.sizes.length === 1}
+                      onClick={addSizeRow}
+                      className="btn btn-outline btn-secondary btn-md w-full font-semibold mt-2 gap-2"
                     >
-                      <XIcon className="w-4 h-4" />
+                      <PlusIcon className="w-5 h-5" />
+                      Tambah Varian Ukuran
                     </button>
                   </div>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={addSizeRow}
-                  className="btn btn-outline btn-sm w-fit"
-                >
-                  + Tambah Ukuran
-                </button>
-              </div>
-              <div className="space-y-6 mt-6">
-                <div className="form-control">
-                  <FloatingInput
-                    label="Deskripsi"
-                    name="description"
-                    type="textarea"
-                    icon={productDescription}
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    required
-                  />
                 </div>
-                <div className="form-control">
-                  <label className="label mb-2">
-                    <span className="label-text font-semibold text-base text-[#d6d6d6] items-center gap-2">
-                      Gambar Produk
-                    </span>
-                    <span className="label-text-alt text-xs opacity-60">
-                      Maks. 3 gambar
-                    </span>
-                  </label>
-                  <div className="bg-base-200 rounded-xl p-2 border-2 border-dashed border-base-300 hover:border-secondary transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageChange}
-                      className="file-input file-input-bordered file-input-secondary w-full"
-                      required={!editingProduct}
-                    />
 
-                    {editingProduct && (
-                      <p className="text-xs text-base-content/60 mt-2 text-center">
-                        Kosongkan agar tetap menggunakan gambar lama.
-                      </p>
-                    )}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-secondary rounded-full"></div>
+                    <h4 className="font-semibold text-lg">
+                      Deskripsi & Masukkan Gambar
+                    </h4>
                   </div>
 
-                  {imagePreviews.length > 0 && (
-                    <div className="flex gap-2 mt-2">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="avatar">
-                          <div className="w-20 rounded-lg">
-                            <img src={preview} alt={`Preview ${index + 1}`} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                    <div className="form-control">
+                      <FloatingInput
+                        label="Deskripsi Produk"
+                        name="description"
+                        type="textarea"
+                        icon={productDescription}
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        required
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold text-white flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <rect
+                              x="2"
+                              y="2"
+                              width="20"
+                              height="20"
+                              rx="2.18"
+                            />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <path d="M21 15L16 10L5 21" />
+                          </svg>
+                          Gambar Produk
+                        </span>
+                        <span className="label-text-alt font-semibold text-xs text-base-content/60">
+                          {imagePreviews.length}/3 · Maks. 5MB per gambar
+                        </span>
+                      </label>
+
+                      <div className="relative mt-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageChange}
+                          className="hidden"
+                          id="product-images"
+                        />
+
+                        <label
+                          htmlFor="product-images"
+                          className="block cursor-pointer"
+                        >
+                          <div className="border-2 border-dashed border-base-300 rounded-xl hover:border-secondary transition-colors group">
+                            <div className="flex flex-col items-center justify-center py-6 px-4">
+                              <div className="w-12 h-12 rounded-full bg-base-200 group-hover:bg-secondary/10 flex items-center justify-center mb-2 transition-colors">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="w-6 h-6 text-base-content/50"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                >
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                  <polyline points="17 8 12 3 7 8" />
+                                  <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                              </div>
+                              <p className="text-sm font-medium">
+                                Tekan untuk mengunggah gambar
+                              </p>
+                              <p className="text-xs text-base-content/40 mt-1">
+                                PNG, JPG, JPEG, WEBP (Maks. 3 gambar)
+                              </p>
+                            </div>
                           </div>
+                        </label>
+                      </div>
+
+                      {editingProduct && (
+                        <p className="text-xs text-base-content/40 font-semibold mt-2 flex items-start gap-1">
+                          <span className="text-error">*</span>
+                          Kosongkan jika ingin tetap menggunakan gambar lama
+                        </p>
+                      )}
+
+                      {imagePreviews.length > 0 && (
+                        <div className="flex gap-3 mt-4">
+                          {imagePreviews.map((preview, index) => (
+                            <div key={index} className="avatar">
+                              <div className="w-20 h-20 rounded-lg border-2 border-base-200 hover:border-secondary transition-all">
+                                <img
+                                  src={preview}
+                                  alt={`Preview ${index + 1}`}
+                                  className="object-cover"
+                                />
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-6 bg-[#ffc586] rounded-full"></div>
+                      <h4 className="font-semibold text-lg">
+                        Promo (Opsional)
+                      </h4>
+                    </div>
+                    <div className="form-control">
+                      <label className="label cursor-pointer gap-3">
+                        <span className="label-text text-sm">
+                          Aktifkan Promo
+                        </span>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-secondary"
+                          checked={enablePromo}
+                          onChange={(e) => setEnablePromo(e.target.checked)}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {enablePromo && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-5 bg-base-300/30 rounded-xl border-base-300/30 hover:border hover:border-[#ffc586]/20">
+                      <FloatingInput
+                        label="Nama Promo"
+                        type="text"
+                        icon={productPromoTitle}
+                        value={formData.promo.title}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            promo: { ...formData.promo, title: e.target.value },
+                          })
+                        }
+                        required={enablePromo}
+                      />
+                      <FloatingInput
+                        label="Diskon (%)"
+                        type="number"
+                        icon={productDiscount}
+                        value={formData.promo.discountPercent}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            promo: {
+                              ...formData.promo,
+                              discountPercent: e.target.value,
+                            },
+                          })
+                        }
+                        min="1"
+                        max="100"
+                        required={enablePromo}
+                      />
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text text-sm text-base-content/70 font-semibold">
+                            Mulai Pada
+                          </span>
+                        </label>
+                        <input
+                          type="date"
+                          className="input input-bordered w-full bg-base-300/50 mt-2"
+                          value={formData.promo.startDate}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              promo: {
+                                ...formData.promo,
+                                startDate: e.target.value,
+                              },
+                            })
+                          }
+                          required={enablePromo}
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text text-sm text-base-content/70 font-semibold">
+                            Berakhir Pada
+                          </span>
+                        </label>
+                        <input
+                          type="date"
+                          className="input input-bordered w-full bg-base-300/50 mt-2"
+                          value={formData.promo.endDate}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              promo: {
+                                ...formData.promo,
+                                endDate: e.target.value,
+                              },
+                            })
+                          }
+                          required={enablePromo}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-[1fr_6fr]">
-              <div className="form-control">
-                <label className="label cursor-pointer">
-                  <span className="label-text font-semibold">Promo</span>
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-secondary"
-                    checked={enablePromo}
-                    onChange={(e) => setEnablePromo(e.target.checked)}
-                  />
-                </label>
-              </div>
-              {enablePromo && (
-                <div className="grid grid-cols-4 gap-4">
-                  <FloatingInput
-                    label="Nama Promo"
-                    type="text"
-                    value={formData.promo.title}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        promo: { ...formData.promo, title: e.target.value },
-                      })
-                    }
-                  />
-                  <FloatingInput
-                    label="Diskon (%)"
-                    type="number"
-                    value={formData.promo.discountPercent}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        promo: {
-                          ...formData.promo,
-                          discountPercent: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                  <input
-                    type="date"
-                    className="input input-bordered w-full"
-                    value={formData.promo.startDate}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        promo: {
-                          ...formData.promo,
-                          startDate: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                  <input
-                    type="date"
-                    className="input input-bordered w-full"
-                    value={formData.promo.endDate}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        promo: {
-                          ...formData.promo,
-                          endDate: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              )}
-            </div>
-            <div className="modal-action">
+
+            <div className="flex items-center justify-end gap-3 px-8 py-4 bg-base-300/50 border-t border-base-200">
               <button
                 type="button"
                 onClick={closeModal}
-                className="btn font-semibold"
+                className="btn btn-ghost"
                 disabled={
                   createProductMutation.isPending ||
                   updateProductMutation.isPending
@@ -748,7 +954,7 @@ const ProductsPage = () => {
               </button>
               <button
                 type="submit"
-                className="btn btn-secondary"
+                className="btn btn-secondary min-w-30 gap-2"
                 disabled={
                   createProductMutation.isPending ||
                   updateProductMutation.isPending
@@ -756,11 +962,14 @@ const ProductsPage = () => {
               >
                 {createProductMutation.isPending ||
                 updateProductMutation.isPending ? (
-                  <span className="loading loading-spinner"></span>
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Menyimpan...
+                  </>
                 ) : editingProduct ? (
-                  <span className="font-semibold">Ubah Produk</span>
+                  "Simpan Perubahan"
                 ) : (
-                  <span className="font-semibold">Tambah Produk</span>
+                  "Tambah Produk"
                 )}
               </button>
             </div>

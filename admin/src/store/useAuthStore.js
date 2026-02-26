@@ -16,7 +16,7 @@ export const useAuthStore = create((set) => ({
     }
     try {
       const res = await axiosInstance.get("/auth/check");
-      set({ authUser: res.data });
+      set({ authUser: res.data.user });
     } catch (error) {
       console.error("Gagal saat cek autentikasi:", error);
       localStorage.removeItem("adminToken");
@@ -45,24 +45,19 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    try {
-      localStorage.removeItem("adminToken");
-      set({ authUser: null });
+    localStorage.removeItem("adminToken");
+    set({ authUser: null });
 
-      toast.success("Anda berhasil logout.");
-    } catch (error) {
-      toast.error("Anda gagal logout.");
-      console.error("Gagal logout:", error);
-    }
+    toast.success("Anda berhasil logout.");
   },
 
   updateProfile: async (data) => {
     try {
       const res = await axiosInstance.put("/auth/update-profile", data);
-      set({ authUser: res.data });
-      toast.success("Foto profil telah diganti.");
+      set({ authUser: res.data.user });
+      toast.success(res.data.message || "Profil berhasil diperbarui.");
     } catch (error) {
-      console.error("Foto profil tidak bisa diganti:", error);
+      console.error("Profil tidak dapat diubah:", error);
       toast.error(error.response?.data?.message || "Gagal memperbarui profil.");
     }
   },

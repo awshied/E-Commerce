@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Redirect, Tabs } from "expo-router";
-import { Image } from "react-native";
+import { Image, ImageSourcePropType } from "react-native";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabsLayout = () => {
   const { user, isLoading } = useAuthStore();
   const insets = useSafeAreaInsets();
+
+  const defaultAvatar = require("../../assets/images/default-avatar.png");
+  const [avatarSource, setAvatarSource] =
+    useState<ImageSourcePropType>(defaultAvatar);
+
+  useEffect(() => {
+    setAvatarSource(user?.imageUrl ? { uri: user.imageUrl } : defaultAvatar);
+  }, [user?.imageUrl, defaultAvatar]);
 
   if (isLoading) return null;
   if (!user) {
@@ -84,14 +92,15 @@ const TabsLayout = () => {
         name="profile"
         options={{
           title: "Anda",
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: () => (
             <Image
-              source={
-                focused
-                  ? require("../../assets/images/icons/profile-fill.png")
-                  : require("../../assets/images/icons/profile-outline.png")
+              source={avatarSource}
+              onError={() =>
+                setAvatarSource(
+                  require("../../assets/images/default-avatar.png"),
+                )
               }
-              className="size-7"
+              className="size-8 rounded-full"
             />
           ),
         }}

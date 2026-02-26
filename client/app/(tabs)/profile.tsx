@@ -1,9 +1,17 @@
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ImageSourcePropType,
+} from "react-native";
 import React, { useState } from "react";
 import SafeScreen from "@/components/SafeScreen";
 import { useAuthStore } from "@/store/useAuthStore";
 import { router } from "expo-router";
 import LogoutConfirmModal from "@/components/LogoutConfirmModal";
+import useWishlist from "@/hooks/useWishlist";
 
 const menuItems = [
   {
@@ -21,7 +29,7 @@ const menuItems = [
   {
     id: 3,
     icon: require("@/assets/images/profile/favorites.png"),
-    title: "Menu Favorit",
+    title: "Barang Favorit",
     action: "/wishlist",
   },
   {
@@ -48,10 +56,21 @@ const supportItems = [
     icon: require("@/assets/images/profile/faq.png"),
     title: "FAQs",
   },
-];
+] as const;
 
 const ProfileScreen = () => {
   const { user } = useAuthStore();
+  const { wishlistCount, isLoading } = useWishlist();
+
+  const defaultAvatar = require("../../assets/images/default-avatar.png");
+  const [avatarSource, setAvatarSource] = useState<ImageSourcePropType>(
+    user?.imageUrl ? { uri: user.imageUrl } : defaultAvatar,
+  );
+
+  React.useEffect(() => {
+    setAvatarSource(user?.imageUrl ? { uri: user.imageUrl } : defaultAvatar);
+  }, [user?.imageUrl, defaultAvatar]);
+
   const [logoutVisible, setLogoutVisible] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const logout = useAuthStore((state) => state.logout);
@@ -86,16 +105,21 @@ const ProfileScreen = () => {
           />
         </TouchableOpacity>
         <Text className="text-center text-xl font-bold text-text-primary">
-          Profil Anda
+          Anda
         </Text>
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 my-6">
           <View className="flex-row items-center px-4 gap-5">
             <Image
-              source={require("../../assets/images/icons/profile-fill.png")}
+              source={avatarSource}
+              onError={() =>
+                setAvatarSource(
+                  require("../../assets/images/default-avatar.png"),
+                )
+              }
               accessibilityLabel="Profile Picture"
-              className="size-24 rounded-md"
+              className="size-28 rounded-2xl"
             />
             <View className="flex-col gap-1">
               <Text className="text-lg font-bold text-text-primary">
@@ -166,9 +190,15 @@ const ProfileScreen = () => {
             </View>
             <View className="w-0.5 h-6 bg-text-gray/20" />
             <View className="flex-col gap-1">
-              <Text className="text-2xl font-bold text-center text-text-primary">
-                367
-              </Text>
+              {isLoading ? (
+                <Text className="text-2xl font-bold text-center text-text-gray/40">
+                  —
+                </Text>
+              ) : (
+                <Text className="text-2xl font-bold text-center text-text-primary">
+                  {wishlistCount}
+                </Text>
+              )}
               <Text className="text-sm font-semibold text-text-gray/70">
                 Favorit
               </Text>
@@ -178,12 +208,12 @@ const ProfileScreen = () => {
           {/* Akun Profil */}
           <View className="flex-col flex-wrap gap-2 mt-6">
             <Text className="text-text-gray/60 font-bold text-sm mb-1">
-              Akun dan profil Anda
+              Profil Anda
             </Text>
             <TouchableOpacity
               className="flex-row items-center justify-between p-4 bg-background-light rounded-xl shadow-xl"
               activeOpacity={0.7}
-              onPress={() => router.push("/account")}
+              onPress={() => router.push("/editProfile")}
             >
               <View className="flex-row gap-4 items-center">
                 <Image
@@ -192,7 +222,7 @@ const ProfileScreen = () => {
                   className="size-7"
                 />
                 <Text className="text-text-gray text-lg font-semibold">
-                  Keamanan Akun
+                  Ubah Profil Anda
                 </Text>
               </View>
               <Image

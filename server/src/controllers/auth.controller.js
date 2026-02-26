@@ -97,8 +97,6 @@ export const login = async (req, res) => {
           _id: user._id,
           username: user.username,
           email: user.email,
-          resetPasswordToken: user.resetPasswordToken,
-          resetPasswordExpires: user.resetPasswordExpires,
           birthday: user.birthday,
           role: user.role,
           gender: user.gender,
@@ -155,7 +153,7 @@ export const resetPassword = async (req, res) => {
   if (!token || !newPassword)
     return res
       .status(400)
-      .json({ message: "Alamat email dan password baru wajib diisi." });
+      .json({ message: "Token dan password baru wajib diisi." });
 
   try {
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -195,56 +193,115 @@ export const resetPassword = async (req, res) => {
 
 // Keluar Dari Aplikasi
 export const logout = async (_, res) => {
-  res.status(200).json({ message: "Anda baru saja logout." });
+  res
+    .clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    })
+    .status(200)
+    .json({ message: "Anda baru saja logout." });
 };
 
 // Memperbarui Profil Akun
 export const updateProfile = async (req, res) => {
   try {
-    const { imageUrl } = req.body;
-
-    if (!imageUrl)
-      return res.status(400).json({ message: "Gambar wajib diunggah." });
-
-    const base64Regex = /^data:image\/(png|jpeg|jpg|webp);base64,/;
-
-    if (!base64Regex.test(imageUrl)) {
-      return res.status(400).json({
-        message: "Format gambar tidak valid.",
-      });
-    }
-
-    const base64Data = imageUrl.split(",")[1];
-    const fileSizeInBytes = Buffer.from(base64Data, "base64").length;
-
-    const MAX_SIZE = 5 * 1024 * 1024;
-
-    if (fileSizeInBytes > MAX_SIZE) {
-      return res.status(400).json({
-        message: "Ukuran gambar maksimal 5MB.",
-      });
-    }
-
+    const { imageUrl, birthday, gender, username } = req.body;
     const userId = req.user._id;
 
-    const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
-      folder: "profile",
-      resource_type: "image",
-    });
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { imageUrl: uploadResponse.secure_url },
-      { new: true },
-    ).select("-password");
-
-    if (!updatedUser) {
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({ message: "Pengguna tidak ditemukan." });
     }
 
-    res.status(200).json(updatedUser);
+    const updateData = {};
+
+    if (imageUrl) {
+      const base64Regex = /^data:image\/(png|jpeg|jpg|webp);base64,/;
+
+      if (!base64Regex.test(imageUrl)) {
+        return res.status(400).json({
+          message: "Format gambar tidak valid.",
+        });
+      }
+
+      const base64Data = imageUrl.split(",")[1];
+      const fileSizeInBytes = Buffer.from(base64Data, "base64").length;
+
+      const MAX_SIZE = 5 * 1024 * 1024;
+
+      if (fileSizeInBytes > MAX_SIZE) {
+        return res.status(400).json({
+          message: "Ukuran gambar maksimal 5MB.",
+        });
+      }
+
+      const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
+        folder: "profile",
+        resource_type: "image",
+      });
+
+      updateData.imageUrl = uploadResponse.secure_url;
+    }
+
+    if (username && username !== user.username) {
+      const exists = await User.findOne({ username });
+      if (exists) {
+        return res.status(400).json({
+          message: "Username sudah digunakan",
+        });
+      }
+
+      updateData.username = username;
+    }
+
+    if (birthday) {
+      if (user.birthday) {
+        return res.status(400).json({
+          message: "Tanggal lahir tidak dapat diubah.",
+        });
+      }
+
+      const parsedDate = new Date(birthday);
+
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({
+          message: "Format tanggal lahir tidak valid.",
+        });
+      }
+
+      updateData.birthday = parsedDate;
+    }
+
+    if (gender) {
+      const allowedGenders = ["unknown", "pria", "wanita"];
+
+      if (!allowedGenders.includes(gender)) {
+        return res.status(400).json({
+          message: "Jenis kelamin tidak valid.",
+        });
+      }
+
+      updateData.gender = gender;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        message: "Tidak ada data yang diperbarui.",
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    res.status(200).json({
+      message: "Profil berhasil diperbarui.",
+      user: updatedUser,
+    });
   } catch (error) {
-    console.error("Gagal update foto profil:", error);
+    console.error("Gagal memperbarui profil:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

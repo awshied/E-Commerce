@@ -25,8 +25,7 @@ const RegisterScreen = () => {
   const [alertType, setAlertType] = useState<"success" | "error" | "info">(
     "info",
   );
-  const [onAlertClose, setOnAlertClose] = useState<() => void>(() => {});
-
+  const [onAlertClose, setOnAlertClose] = useState<() => void>(() => () => {});
   const showAlert = (
     title: string,
     message: string,

@@ -241,7 +241,11 @@ const WishlistScreen = () => {
 
                       {selectedSize.stock > 0 ? (
                         <Text className="text-xs font-semibold text-accent-warning">
-                          {selectedSize.stock} Stok Tersisa
+                          {selectedSize.stock}{" "}
+                          <Text className="text-text-gray/70">
+                            {" "}
+                            Stok Tersisa
+                          </Text>
                         </Text>
                       ) : (
                         <Text className="text-xs font-semibold text-text-gray/50">

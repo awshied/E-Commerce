@@ -48,7 +48,8 @@
           "project": "glaciocore-ecommerce",
           "organization": "individual-freelance"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": false,

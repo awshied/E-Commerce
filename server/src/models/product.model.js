@@ -25,14 +25,17 @@ const promoSchema = new mongoose.Schema({
   },
   discountPercent: {
     type: Number,
-    min: 0,
+    required: true,
+    min: 1,
     max: 100,
   },
   startDate: {
     type: Date,
+    required: true,
   },
   endDate: {
     type: Date,
+    required: true,
   },
 });
 
@@ -86,6 +89,14 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+promoSchema.pre("validate", function (next) {
+  if (this.endDate < this.startDate) {
+    next(new Error("End date must be after start date"));
+  } else {
+    next();
+  }
+});
 
 productSchema.pre("save", function (next) {
   if (!this.newUntil) {
