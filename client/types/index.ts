@@ -46,7 +46,7 @@ export interface ProductFilter {
 }
 
 export interface Address {
-  _id?: string;
+  _id: string;
   label: "rumah" | "apartemen" | "hotel" | "kantor";
   fullName: string;
   streetAddress: string;
@@ -58,6 +58,8 @@ export interface Address {
   phoneNumber: string;
   isDefault: boolean;
 }
+
+export type AddressFormType = Omit<Address, "_id">;
 
 export type UserRole = "user" | "admin";
 

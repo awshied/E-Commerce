@@ -329,7 +329,6 @@ const FilterModal = ({
               </View>
 
               {/* Promo Diskon */}
-              {/* Filter Diskon Promo */}
               <View className="mt-5">
                 <View className="flex-row items-center justify-between">
                   <Text className="font-bold text-text-primary">

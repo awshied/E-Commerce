@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import React, { useState } from "react";
 import { Link } from "expo-router";
@@ -35,76 +37,81 @@ const AuthScreen = () => {
   };
 
   return (
-    <View className="px-8 flex-1 items-center justify-center bg-background">
-      <View className="items-center mb-8">
-        <Image
-          source={require("../../assets/images/logo-web.png")}
-          className="size-48"
-          resizeMode="contain"
-        />
-        <Text className="text-white text-xl font-semibold mt-4">
-          Selamat Datang
-        </Text>
-        <Text className="text-gray-400 text-sm mt-1">
-          Ayo jelajahi{" "}
-          <Text className="text-indigo-400 font-bold">GlacioCore</Text> bersama
-          kami.
-        </Text>
-      </View>
-      <View className="w-full mt-2">
-        <FloatingInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          icon={require("../../assets/images/icons/email.png")}
-        />
-
-        <FloatingInput
-          label="Kata Sandi"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          icon={require("../../assets/images/icons/password.png")}
-        />
-
-        <Link href="forgotPassword" asChild>
-          <TouchableOpacity className="self-end">
-            <Text className="text-primary-purple text-sm font-semibold">
-              Lupa Kata Sandi?
-            </Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
-
-      <TouchableOpacity
-        onPress={handleLogin}
-        disabled={isLoading}
-        className={`mt-6 rounded-xl py-4 w-full items-center justify-center ${
-          isLoading ? "bg-gray-500" : "bg-indigo-600"
-        }`}
-      >
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#ffffff" />
-        ) : (
-          <Text className="text-center text-white font-semibold text-base">
-            Masuk
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <View className="px-8 flex-1 items-center justify-center bg-background">
+        <View className="items-center mb-8">
+          <Image
+            source={require("../../assets/images/logo-web.png")}
+            className="size-48"
+            resizeMode="contain"
+          />
+          <Text className="text-white text-xl font-semibold mt-4">
+            Selamat Datang
           </Text>
-        )}
-      </TouchableOpacity>
+          <Text className="text-gray-400 text-sm mt-1">
+            Ayo jelajahi{" "}
+            <Text className="text-indigo-400 font-bold">GlacioCore</Text>{" "}
+            bersama kami.
+          </Text>
+        </View>
+        <View className="w-full mt-2">
+          <FloatingInput
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            icon={require("../../assets/images/icons/email.png")}
+          />
 
-      <View className="flex-row justify-center mt-6">
-        <Text className="text-text-gray/70 text-sm">Belum punya akun?</Text>
-        <Link href="register" asChild>
-          <TouchableOpacity>
-            <Text className="text-primary-purple text-sm ml-1 font-semibold">
-              Daftar
+          <FloatingInput
+            label="Kata Sandi"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            icon={require("../../assets/images/icons/password.png")}
+          />
+
+          <Link href="forgotPassword" asChild>
+            <TouchableOpacity className="self-end">
+              <Text className="text-primary-purple text-sm font-semibold">
+                Lupa Kata Sandi?
+              </Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleLogin}
+          disabled={isLoading}
+          className={`mt-6 rounded-xl py-4 w-full items-center justify-center ${
+            isLoading ? "bg-gray-500" : "bg-indigo-600"
+          }`}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text className="text-center text-white font-semibold text-base">
+              Masuk
             </Text>
-          </TouchableOpacity>
-        </Link>
+          )}
+        </TouchableOpacity>
+
+        <View className="flex-row justify-center mt-6">
+          <Text className="text-text-gray/70 text-sm">Belum punya akun?</Text>
+          <Link href="register" asChild>
+            <TouchableOpacity>
+              <Text className="text-primary-purple text-sm ml-1 font-semibold">
+                Daftar
+              </Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

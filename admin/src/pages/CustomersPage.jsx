@@ -89,19 +89,28 @@ const CustomersPage = () => {
                       </td>
 
                       <td>
-                        {customer.addresses?.city ||
-                        customer.addresses?.province ? (
-                          <div className="text-sm font-medium">
-                            {[
-                              customer.addresses?.city,
-                              customer.addresses?.province,
-                            ]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </div>
-                        ) : (
-                          <span className="text-sm font-medium">-</span>
-                        )}
+                        {(() => {
+                          const defaultAddress = customer.addresses?.find(
+                            (addr) => addr.isDefault,
+                          );
+
+                          if (!defaultAddress) return <span>-</span>;
+
+                          const addressText = [
+                            defaultAddress.city,
+                            defaultAddress.province,
+                          ]
+                            .filter(Boolean)
+                            .join(", ");
+
+                          if (!addressText) return <span>-</span>;
+
+                          return (
+                            <div className="text-sm font-medium">
+                              {addressText}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td>
                         <div className="text-sm font-medium">

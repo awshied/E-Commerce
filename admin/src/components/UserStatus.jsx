@@ -48,6 +48,12 @@ const UserStatus = () => {
       status: "offline",
     })),
   ];
+
+  const getPrimaryCity = (addresses) => {
+    if (!addresses?.length) return null;
+    const primary = addresses.find((a) => a.isDefault) || addresses[0];
+    return primary?.city || null;
+  };
   return (
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">
@@ -104,7 +110,7 @@ const UserStatus = () => {
                       className="w-3"
                     />
                     <span className="text-base-content/60 text-xs font-semibold">
-                      {user.city || "Tidak Diketahui"}
+                      {getPrimaryCity(user.addresses) || "Tidak Diketahui"}
                     </span>
                   </div>
                 </div>

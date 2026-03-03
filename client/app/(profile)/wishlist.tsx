@@ -99,7 +99,7 @@ const WishlistScreen = () => {
             />
           </TouchableOpacity>
           <Text className="text-center text-xl font-bold text-text-primary">
-            Menu Favorit
+            Barang Favorit
           </Text>
         </View>
         <Text className="text-text-gray/70 text-sm">
@@ -322,7 +322,7 @@ function WishlistLoading() {
           />
         </TouchableOpacity>
         <Text className="text-center text-xl font-bold text-text-primary">
-          Menu Favorit
+          Barang Favorit
         </Text>
       </View>
       <View className="flex-1 items-center justify-center">
@@ -346,7 +346,7 @@ function WishlistError() {
           />
         </TouchableOpacity>
         <Text className="text-center text-xl font-bold text-text-primary">
-          Menu Favorit
+          Barang Favorit
         </Text>
       </View>
       <View className="flex-1 items-center justify-center px-4">

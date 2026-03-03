@@ -19,7 +19,7 @@ router.post("/ping", pingUser);
 // Kelola Alamat
 router.post("/addresses", addAddress);
 router.get("/addresses", getAddress);
-router.post("/addresses/:addressId", updateAddress);
+router.put("/addresses/:addressId", updateAddress);
 router.delete("/addresses/:addressId", deleteAddress);
 
 // Kelola Wishlist

@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { useAuthStore } from "@/store/useAuthStore";
 import SafeScreen from "@/components/SafeScreen";
 import FloatingInput from "@/components/FloatingInput";
+import { formatDate } from "@/lib/formatDate";
 
 const GENDERS = [
   { label: "Tidak Diketahui", value: "unknown" },
@@ -158,7 +159,7 @@ const EditProfileScreen = () => {
             </View>
 
             {/* Email */}
-            <View className="relative">
+            <View className="relative mb-4">
               <Image
                 source={require("../../assets/images/icons/email.png")}
                 className="size-6 absolute right-2 top-5"
@@ -170,6 +171,22 @@ const EditProfileScreen = () => {
               </Text>
               <Text className="border-b-2 border-accent-warning text-lg pt-6 pb-1 pl-1 text-text-primary">
                 {user.email}
+              </Text>
+            </View>
+
+            {/* Tanggal Bergabung */}
+            <View className="relative">
+              <Image
+                source={require("../../assets/images/icons/calendar.png")}
+                className="size-6 absolute right-2 top-5"
+                style={{ tintColor: "#ffc586" }}
+                resizeMode="contain"
+              />
+              <Text className="absolute left-0 top-0 text-[11px] text-accent-warning">
+                Anda Bergabung Pada
+              </Text>
+              <Text className="border-b-2 border-accent-warning text-lg pt-6 pb-1 pl-1 text-text-primary">
+                {formatDate(user.createdAt)}
               </Text>
             </View>
           </View>
@@ -269,21 +286,21 @@ const EditProfileScreen = () => {
                 </Text>
               </View>
             )}
-            {/* Tombol Simpan */}
-            <TouchableOpacity
-              onPress={handleSave}
-              disabled={loading}
-              className="mt-6 rounded-xl py-4 items-center justify-center shadow-xl font-semibold bg-background-light"
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <Text className="text-center text-white font-semibold text-base">
-                  Simpan Perubahan
-                </Text>
-              )}
-            </TouchableOpacity>
           </View>
+          {/* Tombol Simpan */}
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={loading}
+            className="mt-6 rounded-xl py-4 mb-12 items-center justify-center shadow-xl font-semibold bg-background-light"
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text className="text-center text-white font-semibold text-base">
+                Simpan Perubahan
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeScreen>
