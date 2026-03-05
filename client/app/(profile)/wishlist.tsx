@@ -141,7 +141,7 @@ const WishlistScreen = () => {
                   key={item._id}
                   className="bg-background-light rounded-xl overflow-hidden mb-3"
                   activeOpacity={0.7}
-                  // onPress={() => router.push(`/product/${item._id}`)}
+                  onPress={() => router.push(`/product/${item._id}`)}
                 >
                   <View className="flex-row p-3 gap-4">
                     <Image

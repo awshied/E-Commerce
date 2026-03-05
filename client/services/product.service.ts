@@ -7,8 +7,8 @@ export const productService = (api: AxiosInstance) => ({
     return data;
   },
 
-  getById: async (id: string) => {
-    const { data } = await api.get<Product>(`/products/${id}`);
+  getById: async (productId: string): Promise<Product> => {
+    const { data } = await api.get<Product>(`/products/${productId}`);
     return data;
   },
 });
