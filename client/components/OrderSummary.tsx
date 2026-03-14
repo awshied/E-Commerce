@@ -18,7 +18,7 @@ export default function OrderSummary({
   total,
 }: OrderSummaryProps) {
   return (
-    <View className="px-4 mb-40">
+    <View className="px-4">
       <View className="bg-background-light rounded-3xl p-5">
         <Text className="text-text-primary text-xl font-extrabold mb-4">
           Ringkasan Pesanan

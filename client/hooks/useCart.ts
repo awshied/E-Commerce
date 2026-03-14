@@ -54,7 +54,7 @@ const useCart = () => {
     }: {
       productId: string;
       size?: string;
-      quantity?: number;
+      quantity: number;
     }) => {
       const { data } = await api.put<{ cart: Cart }>(`/cart/${productId}`, {
         size,

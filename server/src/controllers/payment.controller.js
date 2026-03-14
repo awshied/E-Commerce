@@ -15,10 +15,19 @@ export async function createPayment(req, res) {
       return res.status(400).json({ error: "Keranjang masih kosong." });
     }
 
+    if (!shippingAddress || !shippingAddress.address || !shippingAddress.city) {
+      return res
+        .status(400)
+        .json({ error: "Alamat pengiriman tidak lengkap." });
+    }
+
     let subtotal = 0;
     const validatedItems = [];
 
     for (const item of cartItems) {
+      if (!item.product || !item.product._id) {
+        return res.status(400).json({ error: "Item keranjang tidak valid." });
+      }
       const product = await Product.findById(item.product._id);
       if (!product) {
         return res
@@ -49,7 +58,7 @@ export async function createPayment(req, res) {
     }
 
     const shipping = 8000;
-    const tax = subtotal * 0.4;
+    const tax = subtotal * 0.04;
     const total = subtotal + shipping + tax;
 
     if (total <= 0) {
@@ -58,8 +67,16 @@ export async function createPayment(req, res) {
 
     let customer;
     if (user.stripeCustomerId) {
-      customer = await stripe.customers.retrieve(user.stripeCustomerId);
-    } else {
+      try {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+        if (customer.deleted) {
+          customer = null;
+        }
+      } catch (err) {
+        customer = null;
+      }
+    }
+    if (!customer) {
       customer = await stripe.customers.create({
         name: user.username,
         email: user.email,
@@ -72,7 +89,7 @@ export async function createPayment(req, res) {
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(total * 100),
+      amount: Math.round(total),
       currency: "idr",
       customer: customer.id,
       automatic_payment_methods: {

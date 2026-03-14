@@ -52,14 +52,15 @@ const CartScreen = () => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [addressModalVisible, setAddressModalVisible] = useState(false);
+  const [updatingItemKey, setUpdatingItemKey] = useState<string | null>(null);
 
   const cartItems = cart?.items || [];
   const subtotal = cartTotal;
   const shipping = 8000;
-  const tax = subtotal * 0.4;
+  const tax = subtotal * 0.04;
   const total = subtotal + shipping + tax;
 
-  const handleQuantityChange = (
+  const handleQuantityChange = async (
     productId: string,
     size: string,
     currentQuantity: number,
@@ -67,7 +68,15 @@ const CartScreen = () => {
   ) => {
     const newQuantity = currentQuantity + change;
     if (newQuantity < 1) return;
-    updateQuantity({ productId, size, quantity: newQuantity });
+
+    const key = `${productId}-${size}`;
+    setUpdatingItemKey(key);
+
+    try {
+      await updateQuantity({ productId, size, quantity: newQuantity });
+    } finally {
+      setUpdatingItemKey(null);
+    }
   };
 
   const handleRemoveItem = (
@@ -105,6 +114,18 @@ const CartScreen = () => {
 
   const handleProceedWithPayment = async (selectedAddress: Address) => {};
 
+  if (isLoading) {
+    return <SafeScreen>{cartLoading()}</SafeScreen>;
+  }
+
+  if (isError) {
+    return <SafeScreen>{cartError()}</SafeScreen>;
+  }
+
+  if (cartItems.length === 0) {
+    return <SafeScreen>{cartEmpty()}</SafeScreen>;
+  }
+
   return (
     <SafeScreen>
       {/* Header */}
@@ -119,12 +140,18 @@ const CartScreen = () => {
           Keranjang
         </Text>
       </View>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 135 }}
+      >
         <View className="p-4 gap-3">
           {cartItems.map((item, index) => {
             const selectedSize = item.product.sizes.find(
               (s) => s.size === item.size,
             );
+            const itemKey = `${item.product._id}-${item.size}`;
+            const isItemUpdating = updatingItemKey === itemKey;
             return (
               <View
                 key={item._id}
@@ -198,7 +225,8 @@ const CartScreen = () => {
 
                               <View className="flex-row items-center mt-2 gap-3">
                                 <Text className="text-text-gray/70 text-xs font-semibold line-through">
-                                  Rp. {selectedSize.price}
+                                  Rp.{" "}
+                                  {selectedSize.price.toLocaleString("id-ID")}
                                 </Text>
                                 <Text className="text-accent-error text-xs font-bold">
                                   -{item.product.promo?.discountPercent}%
@@ -265,9 +293,9 @@ const CartScreen = () => {
                             -1,
                           )
                         }
-                        disabled={isUpdating}
+                        disabled={isItemUpdating}
                       >
-                        {isUpdating ? (
+                        {isItemUpdating ? (
                           <ActivityIndicator size="small" color="#ffffff" />
                         ) : (
                           <Image
@@ -294,9 +322,9 @@ const CartScreen = () => {
                             1,
                           )
                         }
-                        disabled={isUpdating}
+                        disabled={isItemUpdating}
                       >
-                        {isUpdating ? (
+                        {isItemUpdating ? (
                           <ActivityIndicator size="small" color="#ffffff" />
                         ) : (
                           <Image
