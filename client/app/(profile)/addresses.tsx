@@ -165,7 +165,7 @@ const AddressesScreen = () => {
         <View className="flex-1 items-center justify-center px-4">
           <Image
             source={require("../../assets/images/empty-address.png")}
-            className="size-20"
+            className="size-32"
           />
           <Text className="text-text-primary text-xl font-bold mt-6">
             Anda belum menyimpan satu alamat
@@ -267,7 +267,7 @@ function AddressError() {
       <View className="flex-1 items-center justify-center px-4">
         <Image
           source={require("../../assets/images/empty-address.png")}
-          className="size-20"
+          className="size-32"
         />
         <Text className="text-text-primary text-xl font-bold mt-6">
           Gagal memuat alamat domisili Anda

@@ -18,6 +18,7 @@ import { router } from "expo-router";
 import { formatPriceCompact } from "@/lib/formatPriceCompact";
 import OrderSummary from "@/components/OrderSummary";
 import AddressSelectionModal from "@/components/AddressSelectionModal";
+import * as Sentry from "@sentry/react-native";
 
 const isPromoActive = (promo?: any) => {
   if (!promo?.startDate || !promo?.endDate) return false;
@@ -112,7 +113,90 @@ const CartScreen = () => {
     setAddressModalVisible(true);
   };
 
-  const handleProceedWithPayment = async (selectedAddress: Address) => {};
+  const handleProceedWithPayment = async (selectedAddress: Address) => {
+    setAddressModalVisible(false);
+
+    Sentry.logger.info("Checkout Initiated", {
+      itemCount: cartItemCount,
+      total: total.toLocaleString("id-ID"),
+      city: selectedAddress.city,
+    });
+
+    try {
+      setPaymentLoading(true);
+
+      const { data } = await api.post("/payment/create-intent", {
+        cartItems,
+        shippingAddress: {
+          fullName: selectedAddress.fullName,
+          streetAddress: selectedAddress.streetAddress,
+          village: selectedAddress.village,
+          district: selectedAddress.district,
+          city: selectedAddress.city,
+          zipCode: selectedAddress.zipCode,
+          province: selectedAddress.province,
+          phoneNumber: selectedAddress.phoneNumber,
+        },
+      });
+
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: data.clientSecret,
+        merchantDisplayName: "GlacioCore",
+      });
+
+      if (initError) {
+        Sentry.logger.error("Pembayaran Gagal", {
+          errorCode: initError.code,
+          errorMessage: initError.message,
+          cartTotal: total,
+          itemCount: cartItems.length,
+        });
+
+        Alert.alert("Error", initError.message);
+        setPaymentLoading(false);
+        return;
+      }
+
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        Sentry.logger.error("Pembayaran Dibatalkan", {
+          errorCode: presentError.code,
+          errorMessage: presentError.message,
+          cartTotal: total,
+          itemCount: cartItems.length,
+        });
+
+        Alert.alert(
+          "Pembayaran Dibatalkan",
+          "Anda baru saja memutuskan untuk membatalkan pembayaran sehingga proses ini tidak dapat dilanjutkan.",
+        );
+      } else {
+        Sentry.logger.info("Pembayaran Berhasil", {
+          total: total.toLocaleString("id-ID"),
+          itemCount: cartItems.length,
+        });
+
+        Alert.alert(
+          "Yeay!",
+          "Pembayaran Anda berhasil! Pesanan Anda akan segera kami proses.",
+          [{ text: "OK", onPress: () => {} }],
+        );
+        clearCart();
+      }
+    } catch (error: any) {
+      Sentry.logger.error("Pembayaran Gagal", {
+        error:
+          error instanceof Error ? error.message : "Error tidak diketahui.",
+        cartTotal: total,
+        itemCount: cartItems.length,
+      });
+      console.log("Detail Error:", error.response?.data);
+      Alert.alert("Error", "Gagal untuk melakukan pembayaran.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
   if (isLoading) {
     return <SafeScreen>{cartLoading()}</SafeScreen>;
@@ -375,7 +459,7 @@ const CartScreen = () => {
         >
           <View className="py-4 flex-row gap-2 items-center justify-center">
             {paymentLoading ? (
-              <ActivityIndicator size="small" color="#121212" />
+              <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <>
                 <Image
@@ -417,9 +501,9 @@ function cartError() {
     <View className="flex-1 bg-background items-center justify-center px-4">
       <Image
         source={require("../../assets/images/empty-cart.png")}
-        className="size-20"
+        className="size-40"
       />
-      <Text className="text-text-primary text-xl font-bold mt-6">
+      <Text className="text-text-primary text-xl font-bold mt-4">
         Gagal memuat keranjang
       </Text>
       <Text className="text-text-gray/70 text-center text-sm mt-2">
@@ -447,7 +531,7 @@ function cartEmpty() {
       <View className="flex-1 items-center justify-center px-4">
         <Image
           source={require("../../assets/images/empty-cart.png")}
-          className="size-20"
+          className="size-40"
         />
         <Text className="text-text-primary text-xl font-bold mt-6">
           Keranjang Anda kosong

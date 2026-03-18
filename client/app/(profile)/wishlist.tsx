@@ -111,7 +111,7 @@ const WishlistScreen = () => {
         <View className="flex-1 items-center justify-center px-4">
           <Image
             source={require("../../assets/images/empty-wishlist.png")}
-            className="size-20"
+            className="size-28"
           />
           <Text className="text-text-primary text-xl font-bold mt-6">
             Anda belum memiliki barang favorit
@@ -352,7 +352,7 @@ function WishlistError() {
       <View className="flex-1 items-center justify-center px-4">
         <Image
           source={require("../../assets/images/empty-wishlist.png")}
-          className="size-20"
+          className="size-28"
         />
         <Text className="text-text-primary text-xl font-bold mt-6">
           Gagal memuat barang favorit Anda

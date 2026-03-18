@@ -13,6 +13,7 @@ import PageLoader from "@/components/PageLoader";
 import useUserPing from "@/hooks/useUserPing";
 import * as Sentry from "@sentry/react-native";
 import { ToastProvider } from "@/components/toast/ToastProvider";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 Sentry.init({
   dsn: "https://d1f89570270f69141157f06906e46dbe@o4509643593089024.ingest.us.sentry.io/4510892862406656",
@@ -65,19 +66,23 @@ export default Sentry.wrap(function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        {isLoading ? (
-          <PageLoader />
-        ) : (
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              statusBarStyle: "light",
-              statusBarTranslucent: true,
-            }}
-          />
-        )}
-      </ToastProvider>
+      <StripeProvider
+        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+      >
+        <ToastProvider>
+          {isLoading ? (
+            <PageLoader />
+          ) : (
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                statusBarStyle: "light",
+                statusBarTranslucent: true,
+              }}
+            />
+          )}
+        </ToastProvider>
+      </StripeProvider>
     </QueryClientProvider>
   );
 });

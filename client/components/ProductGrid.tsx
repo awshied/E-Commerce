@@ -304,7 +304,7 @@ const ProductGrid = ({ products, isLoading, isError }: ProductGridProps) => {
       <View className="py-20 items-center justify-center">
         <Image
           source={require("../assets/images/not-found.png")}
-          className="size-20"
+          className="size-24"
         />
         <Text className="text-text-primary text-xl font-bold mt-6">
           Gagal memuat barang
@@ -337,7 +337,7 @@ const NoProductsFound = () => {
     <View className="py-20 items-center justify-center">
       <Image
         source={require("../assets/images/not-found.png")}
-        className="size-20"
+        className="size-24"
       />
       <Text className="text-text-primary text-xl font-bold mt-6">
         Barang tidak ditemukan

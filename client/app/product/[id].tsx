@@ -53,7 +53,10 @@ const ProductDetailScreen = () => {
 
   const availableSizes = product?.sizes.filter((s) => s.stock > 0);
   const selectedSize = product
-    ? (selectedSizes[product._id] ?? availableSizes?.[0] ?? null)
+    ? (selectedSizes[product._id] ??
+      availableSizes?.[0] ??
+      product.sizes[0] ??
+      null)
     : null;
 
   const handleSelectSize = useCallback(
@@ -457,7 +460,7 @@ function ProductDetailError() {
       <View className="flex-1 items-center justify-center px-4">
         <Image
           source={require("../../assets/images/not-found.png")}
-          className="size-20"
+          className="size-24"
         />
         <Text className="text-text-primary text-xl font-bold mt-6">
           Barang tidak ditemukan

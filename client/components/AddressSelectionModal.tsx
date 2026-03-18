@@ -164,7 +164,7 @@ const AddressSelectionModal = ({
             >
               <View className="flex-row gap-2 items-center justify-center">
                 {isProcessing ? (
-                  <ActivityIndicator size="small" color="#121212" />
+                  <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
                     <Image
