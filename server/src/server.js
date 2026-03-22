@@ -29,6 +29,18 @@ app.use(
   }),
 );
 
+app.use(
+  "/api/payment",
+  (req, res, next) => {
+    if (req.originalUrl === "/api/payment/webhook") {
+      express.raw({ type: "application/json" })(req, res, next);
+    } else {
+      express.json()(req, res, next);
+    }
+  },
+  paymentRoutes,
+);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
@@ -36,7 +48,6 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/payment", paymentRoutes);
 app.use("/api/comments", commentRoutes);
 
 app.get("/api/health", (req, res) => {

@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { Product } from "../models/product.model.js";
 import { Order } from "../models/order.model.js";
@@ -125,11 +126,21 @@ export async function createPayment(req, res) {
       },
       receipt_email: user.email,
       description: `Dipesan oleh ${user.username}`,
+    });
+
+    const order = await Order.create({
+      user: user._id,
+      orderItems: validatedItems,
+      shippingAddress,
+      totalPrice: total,
+      paymentResult: {
+        id: paymentIntent.id,
+        status: "pending",
+      },
+    });
+    await stripe.paymentIntents.update(paymentIntent.id, {
       metadata: {
-        userId: user._id.toString(),
-        itemCount: validatedItems.length.toString(),
-        productIds: validatedItems.map((i) => i.product).join(","),
-        totalPrice: total.toString(),
+        orderId: order._id.toString(),
       },
     });
 
@@ -138,4 +149,80 @@ export async function createPayment(req, res) {
     console.error("Error di controller createPayment:", error);
     res.status(500).json({ message: "Server internal error." });
   }
+}
+
+export async function handleWebhook(req, res) {
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (err) {
+    console.error("Webhook error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object;
+    const { orderId } = paymentIntent.metadata;
+
+    let session;
+
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
+
+      const order = await Order.findById(orderId).session(session);
+
+      if (!order) throw new Error("Pesanan tidak ditemukan");
+
+      if (order.paymentResult?.id) {
+        await session.commitTransaction();
+        return res.json({ received: true });
+      }
+
+      order.paymentResult = {
+        id: paymentIntent.id,
+        status: "succeeded",
+      };
+
+      await order.save({ session });
+
+      for (const item of order.orderItems) {
+        const result = await Product.findOneAndUpdate(
+          {
+            _id: item.product,
+            "sizes.size": item.size,
+            "sizes.stock": { $gte: item.quantity },
+          },
+          {
+            $inc: { "sizes.$.stock": -item.quantity },
+          },
+          { session },
+        );
+        if (!result) {
+          throw new Error(
+            `Stok tidak cukup untuk ${item.name} dengan ukuran ${item.size}`,
+          );
+        }
+      }
+
+      await session.commitTransaction();
+      console.log("Pesanan berhasil dibuat.");
+    } catch (error) {
+      if (session?.inTransaction()) {
+        await session.abortTransaction();
+      }
+      console.error("Transaksi gagal:", error);
+      return res.status(500).json({ error: "Gagal dalam memproses pesanan." });
+    } finally {
+      session?.endSession();
+    }
+  }
+
+  res.json({ received: true });
 }
