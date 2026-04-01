@@ -127,8 +127,8 @@ const RevenueExpenseChart = () => {
 
               <Tooltip content={<CustomTooltip />} />
 
-              <Bar dataKey="revenue" fill="#FFD28F" />
-              <Bar dataKey="expense" fill="#FF5B5B" />
+              <Bar dataKey="revenue" fill="#2fd4bf" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="expense" fill="#818cf8" radius={[8, 8, 0, 0]} />
 
               <defs>
                 <linearGradient

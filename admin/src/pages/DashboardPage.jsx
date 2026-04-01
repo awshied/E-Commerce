@@ -113,33 +113,33 @@ const DashboardPage = () => {
                 <thead>
                   <tr>
                     <th>ID Pesanan</th>
-                    <th>Pelanggan</th>
-                    <th>Item</th>
-                    <th>Jumlah Harga</th>
-                    <th>Status</th>
-                    <th>Tanggal</th>
+                    <th>Nama Pelanggan</th>
+                    <th>Jumlah Barang</th>
+                    <th>Total Harga</th>
+                    <th>Status Pesanan</th>
+                    <th>Tanggal Pesan</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentOrders.map((order) => (
                     <tr key={order._id}>
                       <td>
-                        <span className="font-medium">
+                        <span className="font-semibold">
                           #{order._id.slice(-8).toUpperCase()}
                         </span>
                       </td>
                       <td>
                         <div>
-                          <div className="font-medium">
+                          <div className="font-semibold">
                             {order.shippingAddress?.fullName || "N/A"}
                           </div>
-                          <div className="text-sm opacity-60">
-                            {order.orderItems.length} item(s)
+                          <div className="text-sm font-medium opacity-60">
+                            {order.orderItems?.length || 0} Barang
                           </div>
                         </div>
                       </td>
                       <td>
-                        <div className="text-sm">
+                        <div className="text-sm font-semibold">
                           {order.orderItems[0]?.name || "N/A"}
                           {(order.orderItems?.length || 0) > 1 &&
                             ` +${order.orderItems.length - 1} lainnya`}
@@ -155,11 +155,13 @@ const DashboardPage = () => {
                         <div
                           className={`badge ${getOrderStatusBadge(order.status)}`}
                         >
-                          {capitalizeText(order.status)}
+                          <span className="font-semibold">
+                            {capitalizeText(order.status)}
+                          </span>
                         </div>
                       </td>
                       <td>
-                        <span className="text-sm opacity-60">
+                        <span className="text-sm font-semibold opacity-60">
                           {formatDate(order.createdAt)}
                         </span>
                       </td>

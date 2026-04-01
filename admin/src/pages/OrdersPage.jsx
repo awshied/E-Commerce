@@ -61,11 +61,11 @@ const OrdersPage = () => {
                 <thead>
                   <tr>
                     <th>ID Pesanan</th>
-                    <th>Pelanggan</th>
-                    <th>Item</th>
-                    <th>Jumlah Harga</th>
-                    <th>Status</th>
-                    <th>Tanggal</th>
+                    <th>Nama Pelanggan</th>
+                    <th>Jumlah Barang</th>
+                    <th>Total Harga</th>
+                    <th>Status Pesanan</th>
+                    <th>Tanggal Pesan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -77,26 +77,26 @@ const OrdersPage = () => {
                     return (
                       <tr key={order._id}>
                         <td>
-                          <span className="font-medium">
+                          <span className="font-semibold">
                             #{order._id.slice(-8).toUpperCase()}
                           </span>
                         </td>
 
                         <td>
-                          <div className="font-medium">
+                          <div className="font-semibold">
                             {order.shippingAddress.fullName}
                           </div>
-                          <div className="text-sm opacity-60">
+                          <div className="text-sm font-medium opacity-60">
                             {order.shippingAddress.district},{" "}
                             {order.shippingAddress.city}
                           </div>
                         </td>
 
                         <td>
-                          <div className="font-medium">
-                            {totalQuantity} buah
+                          <div className="font-semibold">
+                            {totalQuantity} Barang
                           </div>
-                          <div className="text-sm opacity-60">
+                          <div className="text-sm font-medium opacity-60">
                             {order.orderItems?.[0]?.name || "N/A"}
                             {(order.orderItems?.length || 0) > 1 &&
                               ` +${order.orderItems.length - 1} lainnya`}
@@ -104,8 +104,9 @@ const OrdersPage = () => {
                         </td>
 
                         <td>
-                          <div className="font-msemibold">
-                            Rp. {order.totalPrice.toLocaleString("id-ID")}
+                          <div className="font-semibold">
+                            Rp.{" "}
+                            {(order.totalPrice ?? 0).toLocaleString("id-ID")}
                           </div>
                         </td>
 
@@ -115,7 +116,7 @@ const OrdersPage = () => {
                             onChange={(e) =>
                               handleStatusChange(order._id, e.target.value)
                             }
-                            className="select select-sm"
+                            className="select select-sm font-semibold"
                             disabled={updateStatusMutation.isPending}
                           >
                             <option value="dikemas">Dikemas</option>
@@ -125,7 +126,7 @@ const OrdersPage = () => {
                         </td>
 
                         <td>
-                          <span className="text-sm opacity-60">
+                          <span className="text-sm font-semibold opacity-60">
                             {formatDate(order.createdAt)}
                           </span>
                         </td>

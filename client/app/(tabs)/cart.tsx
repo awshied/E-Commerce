@@ -35,17 +35,13 @@ const getDiscountedPrice = (price: number, discountPercent = 0) => {
 const CartScreen = () => {
   const api = useApi();
   const {
-    addToCart,
-    isAddingToCart,
     cart,
     cartItemCount,
     cartTotal,
     clearCart,
-    isClearing,
     isError,
     isLoading,
     isRemoving,
-    isUpdating,
     removeFromCart,
     updateQuantity,
   } = useCart();
@@ -224,6 +220,8 @@ const CartScreen = () => {
           Keranjang
         </Text>
       </View>
+
+      {/* Main */}
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
