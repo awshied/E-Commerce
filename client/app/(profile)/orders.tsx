@@ -15,6 +15,7 @@ import SafeScreen from "@/components/SafeScreen";
 import { router } from "expo-router";
 import { formatDate } from "@/lib/formatDate";
 import { capitalizeLetter, getStatusColor } from "@/lib/statusAndCapitalize";
+import RatingModal from "@/components/RatingModal";
 
 const OrdersScreen = () => {
   const { data: orders, isLoading, isError } = useOrders();
@@ -32,8 +33,7 @@ const OrdersScreen = () => {
 
     const initialRatings: { [key: string]: number } = {};
     order.orderItems.forEach((item) => {
-      const productId = item.product._id;
-      initialRatings[productId] = 0;
+      initialRatings[item._id] = 0;
     });
 
     setProductRatings(initialRatings);
@@ -52,13 +52,13 @@ const OrdersScreen = () => {
 
     try {
       await Promise.all(
-        selectedOrder.orderItems.map((item) => {
+        selectedOrder.orderItems.map((item) =>
           createRatingAsync({
             productId: item.product._id,
             orderId: selectedOrder._id,
-            rating: productRatings[item.product._id],
-          });
-        }),
+            rating: productRatings[item._id],
+          }),
+        ),
       );
 
       Alert.alert(
@@ -189,14 +189,11 @@ const OrdersScreen = () => {
 
                   {order.status === "diterima" &&
                     (order.hasReviewed ? (
-                      <View className="bg-primary-purple/20 border border-primary-purple px-4 py-2 rounded-full flex-row items-center gap-2">
+                      <View className="px-2">
                         <Image
-                          source={require("../../assets/images/icons/checked.png")}
-                          className="size-4"
+                          source={require("@/assets/images/success.png")}
+                          className="size-8"
                         />
-                        <Text className="text-text-primary font-bold text-sm">
-                          Direview
-                        </Text>
                       </View>
                     ) : (
                       <TouchableOpacity
@@ -215,6 +212,18 @@ const OrdersScreen = () => {
           })}
         </View>
       </ScrollView>
+
+      <RatingModal
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        order={selectedOrder}
+        productRatings={productRatings}
+        onSubmit={handleSubmitRating}
+        isSubmitting={isCreatingRating}
+        onRatingChange={(productId, rating) =>
+          setProductRatings((prev) => ({ ...prev, [productId]: rating }))
+        }
+      />
     </SafeScreen>
   );
 };

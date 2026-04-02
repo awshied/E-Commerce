@@ -30,7 +30,7 @@ const LoginPage = () => {
             <p className="text-sm text-base-content mt-2 pb-10 text-center px-4 leading-relaxed">
               Selamat datang kembali{" "}
               <span className="text-secondary font-bold">Admin </span>
-              di <span className="text-secondary font-bold">Mang TekTek</span>.
+              di <span className="text-secondary font-bold">GlacioCore</span>.
               Silakan kelola produk, pesanan, pelanggan, dan laporan penjualan
               dengan mudah melalui panel ini.
             </p>

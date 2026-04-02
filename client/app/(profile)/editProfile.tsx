@@ -33,6 +33,7 @@ const EditProfileScreen = () => {
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const BANNER_HEIGHT = 100;
 
   useEffect(() => {
     if (user) {
@@ -117,28 +118,49 @@ const EditProfileScreen = () => {
 
       {/* Main */}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="p-4 mt-2">
-          {/* Foto Profil */}
-          <View className="w-full justify-center items-center">
-            <TouchableOpacity
-              onPress={handlePickImage}
-              className="items-center justify-center relative size-24 rounded-full"
-              activeOpacity={0.7}
-            >
-              <Image
-                source={avatarSource}
-                className="size-full object-cover rounded-full"
-              />
-              <View className="absolute -bottom-1 -right-2 bg-primary-purple p-1 border-4 border-background rounded-full items-center justify-center shadow-xl">
+        <View className="relative">
+          <Image
+            source={require("../../assets/images/home-banner.jpg")}
+            style={{ height: BANNER_HEIGHT }}
+            className="w-full opacity-60"
+            resizeMode="cover"
+          />
+          <View
+            className="absolute px-4 z-10"
+            style={{ bottom: -16, left: 0, right: 0 }}
+          >
+            {/* Foto Profil */}
+            <View className="w-full justify-center items-center">
+              <TouchableOpacity
+                onPress={handlePickImage}
+                className="items-center justify-center relative size-24 rounded-full"
+                activeOpacity={0.7}
+                accessibilityLabel="Ubah foto profil"
+              >
                 <Image
-                  source={require("../../assets/images/profile/image-editing.png")}
-                  className="size-7"
+                  source={avatarSource}
+                  className="size-full object-cover rounded-full border-3 border-primary-purple"
                 />
-              </View>
-            </TouchableOpacity>
+                <View className="absolute -bottom-1 -right-2 bg-primary-purple p-1 border-4 border-background rounded-full items-center justify-center shadow-xl">
+                  <Image
+                    source={require("../../assets/images/profile/image-editing.png")}
+                    className="size-7"
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          <View className="w-full mt-12">
+          <View
+            className="absolute bottom-0 left-0 right-0 bg-background"
+            style={{
+              height: 20,
+              borderTopLeftRadius: 36,
+              borderTopRightRadius: 36,
+            }}
+          />
+        </View>
+        <View className="p-4 mt-2">
+          <View className="w-full mt-6">
             <Text className="text-sm font-bold text-text-gray/70 mb-2">
               Informasi akun Anda saat ini
             </Text>

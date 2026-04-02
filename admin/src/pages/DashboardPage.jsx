@@ -83,7 +83,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Pendapatan / Pengeluaran & User Status */}
-      <div className="grid grid-cols-[2fr_1fr] gap-2">
+      <div className="flex flex-col lg:grid lg:grid-cols-[2fr_1fr] gap-4 lg:gap-2">
         {/* Pendapatan & Pengeluaran */}
         <RevenueExpenseChart />
         {/* User Status */}

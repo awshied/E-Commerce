@@ -20,7 +20,7 @@ export const createReview = async (req, res) => {
       return res.status(404).json({ error: "Pesanan tidak ditemukan." });
     }
 
-    if (order.user._id !== user.user._id) {
+    if (order.user.toString() !== user._id.toString()) {
       return res
         .status(403)
         .json({ error: "Tidak terotorisasi untuk memberi rating." });
@@ -41,22 +41,22 @@ export const createReview = async (req, res) => {
         .json({ error: "Produk tidak ditemukan pada pesanan ini." });
     }
 
-    const existingReview = await Review.findOne({
-      productId,
-      userId: user._id,
-    });
-    if (existingReview) {
-      return res
-        .status(400)
-        .json({ error: "Kamu telah memberi rating untuk produk ini." });
-    }
+    const review = await Review.findOneAndUpdate(
+      { productId, userId: user._id },
+      {
+        $set: { rating },
+        $setOnInsert: { orderId, productId, userId: user._id },
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+        includeResultMetadata: true,
+      },
+    );
 
-    const review = await Review.create({
-      productId,
-      userId: user._id,
-      orderId,
-      rating,
-    });
+    const isNewReview = !review.lastErrorObject?.updatedExisting;
+    const reviewDoc = review.value;
 
     const reviews = await Review.find({ productId });
     const totalRating = reviews.reduce((sum, rev) => sum + rev.rating, 0);
@@ -74,7 +74,12 @@ export const createReview = async (req, res) => {
       return res.status(404).json({ error: "Produk tidak ditemukan." });
     }
 
-    res.status(201).json({ message: "Berhasil memberi rating.", review });
+    res.status(isNewReview ? 201 : 200).json({
+      message: isNewReview
+        ? "Berhasil memberi rating."
+        : "Berhasil memperbarui rating.",
+      review: reviewDoc,
+    });
   } catch (error) {
     console.error("Error di controller createReview:", error);
     res.status(500).json({ message: "Server internal error." });

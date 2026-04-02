@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { router } from "expo-router";
 import LogoutConfirmModal from "@/components/LogoutConfirmModal";
 import useWishlist from "@/hooks/useWishlist";
+import { useOrders } from "@/hooks/useOrders";
 
 const menuItems = [
   {
@@ -61,6 +62,9 @@ const supportItems = [
 const ProfileScreen = () => {
   const { user } = useAuthStore();
   const { wishlistCount, isLoading } = useWishlist();
+  const { data: orders, isLoading: ordersLoading } = useOrders();
+
+  const ordersCount = orders?.length || 0;
 
   const defaultAvatar = require("../../assets/images/default-avatar.png");
   const [avatarSource, setAvatarSource] = useState<ImageSourcePropType>(
@@ -164,7 +168,7 @@ const ProfileScreen = () => {
                   className="size-3"
                 />
                 <Text className="text-xs font-semibold text-text-gray/70 mt-0.5">
-                  12345678901234
+                  {user?.addresses?.[0]?.phoneNumber}
                 </Text>
               </View>
             </View>
@@ -181,9 +185,15 @@ const ProfileScreen = () => {
             </View>
             <View className="w-0.5 h-6 bg-text-gray/20" />
             <View className="flex-col gap-1">
-              <Text className="text-2xl font-bold text-center text-text-primary">
-                367
-              </Text>
+              {ordersLoading ? (
+                <Text className="text-2xl font-bold text-center text-text-gray/40">
+                  —
+                </Text>
+              ) : (
+                <Text className="text-2xl font-bold text-center text-text-primary">
+                  {ordersCount}
+                </Text>
+              )}
               <Text className="text-sm font-semibold text-text-gray/70">
                 Pesanan
               </Text>

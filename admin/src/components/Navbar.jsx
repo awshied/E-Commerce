@@ -253,14 +253,14 @@ const Navbar = () => {
         <Menu className="size-5" />
       </label>
 
-      <div className="flex-1 px-4">
+      <div className="flex-1 lg:px-4 px-1">
         <h1 className="text-xl font-bold">
           {navigationBar.find((item) => item.path === location.pathname)
             ?.name || "Dashboard"}
         </h1>
       </div>
 
-      <div className="mr-5 flex gap-6">
+      <div className="mr-0 lg:mr-5 flex gap-6">
         <div className="card-actions items-center gap-3">
           <div className="relative" ref={buttonRef}>
             <button
@@ -277,7 +277,7 @@ const Navbar = () => {
           {showNotif && (
             <div
               ref={panelRef}
-              className={`absolute right-50 top-16 w-100 bg-base-300 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] rounded-2xl p-4 z-50 border border-white/10 ring-1 ring-primary/20   transition-all duration-200 ease-out ${showNotif ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+              className={`absolute right-4 lg:right-50 top-16 w-100 bg-base-300 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] rounded-2xl p-4 z-50 border border-white/10 ring-1 ring-primary/20   transition-all duration-200 ease-out ${showNotif ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
             >
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-start gap-1">
@@ -354,17 +354,17 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end justify-center py-2">
-            <small className="text-xs font-medium text-base-content">
+          <div className="flex flex-col items-end justify-center py-1 lg:py-2">
+            <small className="text-[10px] lg:text-xs font-medium text-base-content">
               Selamat Datang,
             </small>
-            <span className="text-lg font-bold text-secondary truncate">
+            <span className="text-base lg:text-lg font-bold text-secondary truncate">
               {authUser?.username}
             </span>
           </div>
           <div className="avatar">
             <button
-              className="size-12 rounded-full overflow-hidden relative group cursor-pointer"
+              className="size-10 lg:size-12 rounded-full overflow-hidden relative group cursor-pointer"
               onClick={() => fileInputRef.current.click()}
             >
               <img
@@ -373,7 +373,7 @@ const Navbar = () => {
                 className="size-full object-cover"
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <Pencil className="size-5" />
+                <Pencil className="size-4 lg:size-5" />
               </div>
             </button>
             <input

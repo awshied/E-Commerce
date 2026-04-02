@@ -421,14 +421,18 @@ const ProductsPage = () => {
                                           </span>
                                           <span
                                             className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                                              item.stock > 0
-                                                ? "bg-secondary/20 text-secondary"
-                                                : "bg-error/20 text-error"
+                                              item.stock === 0
+                                                ? "bg-error/20 text-error"
+                                                : item.stock <= 10
+                                                  ? "bg-warning/20 text-warning"
+                                                  : "bg-secondary/20 text-secondary"
                                             }`}
                                           >
-                                            {item.stock > 0
-                                              ? `${item.stock} stok`
-                                              : "Habis"}
+                                            {item.stock === 0
+                                              ? "Habis"
+                                              : item.stock <= 10
+                                                ? `${item.stock} stok`
+                                                : `${item.stock} stok`}
                                           </span>
                                         </div>
 
