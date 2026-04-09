@@ -1,3 +1,5 @@
+import slugify from "slugify";
+
 import cloudinary from "../config/cloudinary.js";
 import { Notification } from "../models/notification.model.js";
 import { Product } from "../models/product.model.js";
@@ -9,6 +11,7 @@ import {
   attachFinalPrice,
 } from "../lib/productStatus.js";
 import { validatePromo } from "../lib/validatePromo.js";
+import { Blog } from "../models/blog.model.js";
 
 // Menangkap Semua Notifikasi yang Tersedia
 export const getNotifications = async (_, res) => {
@@ -263,6 +266,195 @@ export const deleteProduct = async (req, res) => {
     res.status(200).json({ message: "Produk berhasil dihapus." });
   } catch (error) {
     console.error("Tidak bisa menghapus produk:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Membuat atau Menambahkan Blog Baru
+export const createBlog = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Hanya admin yang dapat membuat blog baru." });
+    }
+
+    const { title, caption, tags } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ message: "Nama blog tidak boleh kosong." });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "Unggah minimal 1 gambar." });
+    }
+
+    if (req.files.length > 3) {
+      return res.status(400).json({ message: "Maksimal hanya 3 gambar." });
+    }
+
+    let slug = slugify(title, { lower: true, strict: true });
+
+    const existing = await Blog.findOne({ slug });
+    if (existing) slug += "-" + Date.now();
+
+    const uploadPromises = req.files.map((file) => {
+      return cloudinary.uploader.upload(file.path, {
+        folder: "blogs",
+      });
+    });
+
+    const uploadResults = await Promise.all(uploadPromises);
+
+    const imageUrls = uploadResults.map((result) => ({
+      url: result.secure_url,
+      public_id: result.public_id,
+    }));
+
+    const parsedTags = Array.isArray(tags)
+      ? tags
+      : tags
+        ? tags.split(",").map((t) => t.trim())
+        : [];
+
+    const blog = await Blog.create({
+      title,
+      slug,
+      caption,
+      tags: parsedTags,
+      blogImages: imageUrls,
+      author: userId,
+    });
+
+    res.status(201).json(blog);
+  } catch (error) {
+    console.error("Tidak bisa menambahkan blog baru:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menangkap Semua Blog Yang Tersedia
+export const getAllBlogs = async (_, res) => {
+  try {
+    const blogs = await Blog.find()
+      .populate("author", "username imageUrl")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ blogs });
+  } catch (error) {
+    console.error("Error pada controller getAllBlogs:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Memperbarui Blog
+export const updateBlog = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Hanya admin yang dapat memperbarui blog." });
+    }
+
+    const { blogId } = req.params;
+    const { title, caption, tags } = req.body;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog tidak ditemukan." });
+    }
+
+    if (title) {
+      let newSlug = slugify(title, { lower: true, strict: true });
+
+      const existing = await Blog.findOne({
+        slug: newSlug,
+        _id: { $ne: blogId },
+      });
+
+      if (existing) {
+        newSlug += "-" + Date.now();
+      }
+
+      blog.title = title;
+      blog.slug = newSlug;
+    }
+
+    if (caption) blog.caption = caption;
+
+    if (tags) {
+      blog.tags = Array.isArray(tags)
+        ? tags
+        : tags.split(",").map((t) => t.trim());
+    }
+
+    if (req.files && req.files.length > 0) {
+      if (req.files.length > 3) {
+        return res.status(400).json({ message: "Maksimal hanya 3 gambar." });
+      }
+
+      const uploadPromises = req.files.map((file) => {
+        return cloudinary.uploader.upload(file.path, {
+          folder: "blogs",
+        });
+      });
+
+      const uploadResults = await Promise.all(uploadPromises);
+
+      if (blog.blogImages && blog.blogImages.length > 0) {
+        try {
+          const deletePromises = blog.blogImages.map((image) =>
+            cloudinary.uploader.destroy(image.public_id),
+          );
+          await Promise.all(deletePromises);
+        } catch (err) {
+          console.error("Gagal menghapus gambar Blog yang lama:", err);
+        }
+      }
+
+      blog.blogImages = uploadResults.map((result) => ({
+        url: result.secure_url,
+        public_id: result.public_id,
+      }));
+    }
+
+    await blog.save();
+    res.status(200).json({ message: "Blog berhasil diperbarui.", blog });
+  } catch (error) {
+    console.error("Error pada controller updateBlog:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menghapus Blog
+export const deleteBlog = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Hanya admin yang dapat menghapus blog." });
+    }
+
+    const { blogId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog tidak ditemukan." });
+    }
+
+    if (blog.blogImages && blog.blogImages.length > 0) {
+      const deletePromises = blog.blogImages.map((image) =>
+        cloudinary.uploader.destroy(image.public_id),
+      );
+      await Promise.all(deletePromises);
+    }
+
+    await Blog.findByIdAndDelete(blogId);
+    res.status(200).json({ message: "Blog berhasil dihapus." });
+  } catch (error) {
+    console.error("Tidak bisa menghapus blog:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

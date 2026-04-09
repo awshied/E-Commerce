@@ -27,21 +27,28 @@ const replySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    reactions: [reactionSchema],
   },
   { timestamps: true },
 );
 
 const commentSchema = new mongoose.Schema(
   {
-    productId: {
+    blogId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: "Blog",
       required: true,
+      index: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
     comment: {
       type: String,
@@ -58,5 +65,7 @@ const commentSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+commentSchema.index({ blogId: 1, createdAt: -1 });
 
 export const Comment = mongoose.model("Comment", commentSchema);

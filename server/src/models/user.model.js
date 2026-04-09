@@ -94,6 +94,12 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     addresses: [addressSchema],
+    likedBlogs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Blog",
+      },
+    ],
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,

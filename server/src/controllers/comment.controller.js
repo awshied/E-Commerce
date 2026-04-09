@@ -1,63 +1,77 @@
+import { Blog } from "../models/blog.model.js";
 import { Comment } from "../models/comment.model.js";
 
-// Menambahkan Ulasan pada Produk
+// Menambahkan Ulasan pada Blog
 export const createComment = async (req, res) => {
   try {
-    const { productId, comment } = req.body;
+    const userId = req.user._id;
+    const { blogId } = req.params;
+    const { comment } = req.body;
 
-    if (!productId) {
+    if (!blogId) {
       return res
         .status(400)
-        .json({ message: "Barang yang diulas harus tersedia." });
+        .json({ message: "Blog yang diulas harus tersedia." });
+    }
+
+    const blogExists = await Blog.exists({ _id: blogId });
+    if (!blogExists) {
+      return res.status(404).json({ message: "Blog tidak ditemukan." });
     }
 
     if (!comment) {
       return res.status(400).json({ message: "Komentar tidak boleh kosong." });
     }
 
-    const opinion = await Comment.create({
-      productId,
-      userId: req.user._id,
+    const newComment = await Comment.create({
+      blogId,
+      userId,
+      role: req.user.role,
       comment,
     });
 
     res
       .status(201)
-      .json({ message: "Anda baru saja menambahkan komentar.", opinion });
+      .json({ message: "Anda baru saja menambahkan komentar.", newComment });
   } catch (error) {
     console.error("Error di controller createComment:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
 
-// Menangkap Semua Ulasan yang Tersedia pada Satu Produk
-export const getProductComments = async (req, res) => {
+// Menangkap Semua Ulasan yang Tersedia pada Satu Blog
+export const getCommentsByBlog = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const { blogId } = req.params;
 
     const comments = await Comment.find({
-      productId,
+      blogId,
       isHidden: false,
     })
-      .populate("userId", "username imageUrl role")
-      .populate("replies.userId", "username role")
+      .populate("userId", "username imageUrl")
       .sort({ createdAt: -1 });
 
     res.status(200).json(comments);
   } catch (error) {
-    console.error("Error di controller getProductComments:", error);
+    console.error("Error di controller getCommentsByBlog:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
 
 // Memberi Reaksi pada Ulasan Tertentu
-export const reactToComment = async (req, res) => {
+export const reactComment = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { commentId } = req.params;
     const { type } = req.body;
 
-    const opinion = await Comment.findById(commentId);
-    if (!opinion) {
+    const allowedTypes = ["like", "dislike", "love"];
+    if (!type || !allowedTypes.includes(type)) {
+      return res.status(400).json({ message: "Tipe reaksi tidak valid." });
+    }
+
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
       return res.status(404).json({ message: "Ulasan tidak ditemukan." });
     }
 
@@ -69,28 +83,29 @@ export const reactToComment = async (req, res) => {
       return res.status(403).json({ message: "User tidak boleh love." });
     }
 
-    opinion.reactions = opinion.reactions.filter(
-      (c) => c.userId.toString() !== req.user._id.toString(),
+    comment.reactions = comment.reactions.filter(
+      (r) => r.userId.toString() !== userId.toString(),
     );
 
-    opinion.reactions.push({
-      userId: req.user._id,
+    comment.reactions.push({
+      userId,
       type,
     });
 
-    await opinion.save();
+    await comment.save();
     res
       .status(200)
-      .json({ message: "Anda telah berhasil memberi reaksi.", opinion });
+      .json({ message: "Anda telah berhasil memberi reaksi.", comment });
   } catch (error) {
-    console.error("Error di controller reactToComment:", error);
+    console.error("Error di controller reactComment:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
 
 // Membalas Ulasan Tertentu
-export const replyToComment = async (req, res) => {
+export const replyComment = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { commentId } = req.params;
     const { message } = req.body;
 
@@ -98,22 +113,23 @@ export const replyToComment = async (req, res) => {
       return res.status(400).json({ message: "Balasan tidak boleh kosong." });
     }
 
-    const opinion = await Comment.findById(commentId);
-    if (!opinion) {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
       return res.status(404).json({ message: "Ulasan tidak ditemukan." });
     }
 
-    opinion.replies.push({
-      userId: req.user._id,
+    comment.replies.push({
+      userId,
       message,
     });
 
-    await opinion.save();
-    res
-      .status(200)
-      .json({ message: "Anda telah berhasil memberi reaksi.", opinion });
+    await comment.save();
+    res.status(200).json({
+      message: "Anda telah berhasil membalas komentar orang.",
+      comment,
+    });
   } catch (error) {
-    console.error("Error di controller replyToComment:", error);
+    console.error("Error di controller replyComment:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

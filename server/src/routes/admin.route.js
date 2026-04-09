@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import {
+  createBlog,
   createProduct,
   deleteAllNotifications,
+  deleteBlog,
   deleteNotification,
   deleteProduct,
+  getAllBlogs,
   getAllCustomers,
   getAllOrders,
   getAllProducts,
@@ -14,6 +17,7 @@ import {
   getRevenueExpenseChart,
   getUserOnlineStatus,
   markAsRead,
+  updateBlog,
   updateOrderStatus,
   updateProduct,
 } from "../controllers/admin.controller.js";
@@ -35,6 +39,12 @@ router.post("/products", upload.array("images", 3), createProduct);
 router.get("/products", getAllProducts);
 router.put("/products/:id", upload.array("images", 3), updateProduct);
 router.delete("/products/:id", deleteProduct);
+
+// Kelola Blog
+router.post("/blogs", upload.array("blogImages", 3), createBlog);
+router.get("/blogs", getAllBlogs);
+router.put("/blogs/:blogId", upload.array("blogImages", 3), updateBlog);
+router.delete("/blogs/:blogId", deleteBlog);
 
 // Kelola Pesanan
 router.get("/orders", getAllOrders);
