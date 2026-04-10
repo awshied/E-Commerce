@@ -14,7 +14,7 @@ router.use(protectRoute);
 // Kelola Blog
 router.get("/", getAllBlogs);
 router.get("/:slug", getBlogBySlug);
-router.post("/:blogId/like", likeBlog);
-router.post("/:blogId/dislike", dislikeBlog);
+router.post("/:id/like", likeBlog);
+router.post("/:id/dislike", dislikeBlog);
 
 export default router;

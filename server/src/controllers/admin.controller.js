@@ -358,10 +358,10 @@ export const updateBlog = async (req, res) => {
         .json({ message: "Hanya admin yang dapat memperbarui blog." });
     }
 
-    const { blogId } = req.params;
+    const { id } = req.params;
     const { title, caption, tags } = req.body;
 
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(id);
     if (!blog) {
       return res.status(404).json({ message: "Blog tidak ditemukan." });
     }
@@ -371,7 +371,7 @@ export const updateBlog = async (req, res) => {
 
       const existing = await Blog.findOne({
         slug: newSlug,
-        _id: { $ne: blogId },
+        _id: { $ne: id },
       });
 
       if (existing) {
@@ -437,9 +437,9 @@ export const deleteBlog = async (req, res) => {
         .json({ message: "Hanya admin yang dapat menghapus blog." });
     }
 
-    const { blogId } = req.params;
+    const { id } = req.params;
 
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(id);
     if (!blog) {
       return res.status(404).json({ message: "Blog tidak ditemukan." });
     }
@@ -451,7 +451,7 @@ export const deleteBlog = async (req, res) => {
       await Promise.all(deletePromises);
     }
 
-    await Blog.findByIdAndDelete(blogId);
+    await Blog.findByIdAndDelete(id);
     res.status(200).json({ message: "Blog berhasil dihapus." });
   } catch (error) {
     console.error("Tidak bisa menghapus blog:", error);

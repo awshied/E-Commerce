@@ -48,6 +48,29 @@ export const productApi = {
   },
 };
 
+// Blog
+export const blogApi = {
+  getAll: async () => {
+    const { data } = await axiosInstance.get("/admin/blogs");
+    return data;
+  },
+
+  create: async (formData) => {
+    const { data } = await axiosInstance.post("/admin/blogs", formData);
+    return data;
+  },
+
+  update: async ({ id, formData }) => {
+    const { data } = await axiosInstance.put(`/admin/blogs/${id}`, formData);
+    return data;
+  },
+
+  delete: async (blogId) => {
+    const { data } = await axiosInstance.delete(`/admin/blogs/${blogId}`);
+    return data;
+  },
+};
+
 // Pesanan
 export const orderApi = {
   getAll: async () => {

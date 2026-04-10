@@ -12,9 +12,9 @@ const router = Router();
 router.use(protectRoute);
 
 // Ulasan Suatu Blog
-router.get("/:blogId", getCommentsByBlog);
-router.post("/:blogId", createComment);
-router.post("/:blogId/react/:commentId", reactComment);
-router.post("/:blogId/reply/:commentId", replyComment);
+router.get("/:id", getCommentsByBlog);
+router.post("/:id", createComment);
+router.post("/:id/react/:commentId", reactComment);
+router.post("/:id/reply/:commentId", replyComment);
 
 export default router;

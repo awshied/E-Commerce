@@ -4,13 +4,13 @@ import { Blog } from "../models/blog.model.js";
 export const likeBlog = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { blogId } = req.params;
+    const { id } = req.params;
 
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(id);
     if (!blog)
       return res.status(404).json({ message: "Blog tidak ditemukan." });
 
-    const alreadyLiked = blog.likes.some((id) => id.equals(userId));
+    const alreadyLiked = blog.likes.some((al) => al.equals(userId));
 
     if (alreadyLiked) {
       blog.likes.pull(userId);
@@ -41,10 +41,10 @@ export const likeBlog = async (req, res) => {
 export const dislikeBlog = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { blogId } = req.params;
+    const { id } = req.params;
 
     let updatedBlog = await Blog.findOneAndUpdate(
-      { _id: blogId, dislikes: userId },
+      { _id: id, dislikes: userId },
       {
         $pull: { dislikes: userId },
         $inc: { dislikesCount: -1 },
@@ -54,7 +54,7 @@ export const dislikeBlog = async (req, res) => {
 
     if (!updatedBlog) {
       updatedBlog = await Blog.findByIdAndUpdate(
-        blogId,
+        id,
         [
           {
             $set: {

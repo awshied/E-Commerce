@@ -43,8 +43,8 @@ router.delete("/products/:id", deleteProduct);
 // Kelola Blog
 router.post("/blogs", upload.array("blogImages", 3), createBlog);
 router.get("/blogs", getAllBlogs);
-router.put("/blogs/:blogId", upload.array("blogImages", 3), updateBlog);
-router.delete("/blogs/:blogId", deleteBlog);
+router.put("/blogs/:id", upload.array("blogImages", 3), updateBlog);
+router.delete("/blogs/:id", deleteBlog);
 
 // Kelola Pesanan
 router.get("/orders", getAllOrders);
