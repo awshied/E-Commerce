@@ -16,7 +16,6 @@ import {
   getNotifications,
   getRevenueExpenseChart,
   getUserOnlineStatus,
-  hideComment,
   markAsRead,
   updateNews,
   updateOrderStatus,
@@ -45,9 +44,6 @@ router.post("/news", upload.array("newsImages", 3), createNews);
 router.get("/news", getAllNews);
 router.put("/news/:id", upload.array("newsImages", 3), updateNews);
 router.delete("/news/:id", deleteNews);
-
-// Sembunyikan Komentar
-router.put("/comments/:commentId/hide", hideComment);
 
 // Kelola Pesanan
 router.get("/orders", getAllOrders);

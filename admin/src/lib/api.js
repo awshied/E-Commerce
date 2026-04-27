@@ -48,29 +48,6 @@ export const productApi = {
   },
 };
 
-// Blog
-export const blogApi = {
-  getAll: async () => {
-    const { data } = await axiosInstance.get("/admin/blogs");
-    return data;
-  },
-
-  create: async (formData) => {
-    const { data } = await axiosInstance.post("/admin/blogs", formData);
-    return data;
-  },
-
-  update: async ({ id, formData }) => {
-    const { data } = await axiosInstance.put(`/admin/blogs/${id}`, formData);
-    return data;
-  },
-
-  delete: async (blogId) => {
-    const { data } = await axiosInstance.delete(`/admin/blogs/${blogId}`);
-    return data;
-  },
-};
-
 // Berita
 export const newsApi = {
   getAll: async () => {
@@ -90,6 +67,58 @@ export const newsApi = {
 
   delete: async (newsId) => {
     const { data } = await axiosInstance.delete(`/admin/news/${newsId}`);
+    return data;
+  },
+};
+
+// Komentar
+export const commentApi = {
+  getCommentByNewsId: async (newsId) => {
+    const { data } = await axiosInstance.get(`/comments?newsId=${newsId}`);
+    return data;
+  },
+
+  getCommentById: async (commentId) => {
+    const { data } = await axiosInstance.get(`/comments/${commentId}`);
+    return data;
+  },
+
+  getAllReplies: async (commentId) => {
+    const { data } = await axiosInstance.get(`/comments/${commentId}/replies`);
+    return data;
+  },
+
+  createComment: async (formData) => {
+    const { data } = await axiosInstance.post("/comments", formData);
+    return data;
+  },
+
+  updateComment: async ({ commentId, formData }) => {
+    const { data } = await axiosInstance.put(
+      `/comments/${commentId}`,
+      formData,
+    );
+    return data;
+  },
+
+  reactToComment: async ({ commentId, formData }) => {
+    const { data } = await axiosInstance.post(
+      `/comments/${commentId}/react`,
+      formData,
+    );
+    return data;
+  },
+
+  deleteComment: async (commentId) => {
+    const { data } = await axiosInstance.delete(`/comments/${commentId}`);
+    return data;
+  },
+
+  hideComment: async ({ commentId, formData }) => {
+    const { data } = await axiosInstance.put(
+      `/comments/${commentId}/hide`,
+      formData,
+    );
     return data;
   },
 };

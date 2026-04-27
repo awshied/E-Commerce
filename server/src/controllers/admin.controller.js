@@ -478,35 +478,6 @@ export const deleteNews = async (req, res) => {
   }
 };
 
-// Menyembunyikan Komentar
-export const hideComment = async (req, res) => {
-  try {
-    const { commentId } = req.params;
-
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Hanya admin yang dapat menyembunyikan komentar." });
-    }
-
-    const comment = await Comment.findById(commentId);
-    if (!comment) {
-      return res.status(404).json({ message: "Komentar tidak ditemukan." });
-    }
-
-    comment.isHidden = !comment.isHidden;
-    await comment.save();
-
-    res.status(200).json({
-      message: `Komentar berhasil ${comment.isHidden ? "disembunyikan" : "ditampilkan kembali"}.`,
-      isHidden: comment.isHidden,
-    });
-  } catch (error) {
-    console.error("Gagal menyembunyikan komentar:", error);
-    res.status(500).json({ message: "Server internal error." });
-  }
-};
-
 // Menangkap Semua Pesanan Yang Tersedia
 export const getAllOrders = async (_, res) => {
   try {

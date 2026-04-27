@@ -7,7 +7,7 @@ const commentSchema = new mongoose.Schema(
       ref: "News",
       required: true,
     },
-    commentedBy: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
