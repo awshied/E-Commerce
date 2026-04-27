@@ -12,10 +12,9 @@ import userRoutes from "./routes/user.route.js";
 import orderRoutes from "./routes/order.route.js";
 import reviewRoutes from "./routes/review.route.js";
 import productRoutes from "./routes/product.route.js";
-import blogRoutes from "./routes/blog.route.js";
+import newsRoutes from "./routes/news.route.js";
 import cartRoutes from "./routes/cart.route.js";
 import paymentRoutes from "./routes/payment.route.js";
-import commentRoutes from "./routes/comment.route.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -48,9 +47,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/blogs", blogRoutes);
+app.use("/api/news", newsRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/comments", commentRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "Sukses" });

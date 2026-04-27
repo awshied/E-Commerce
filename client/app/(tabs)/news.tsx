@@ -2,12 +2,12 @@ import { Text } from "react-native";
 import React from "react";
 import SafeScreen from "@/components/SafeScreen";
 
-const BlogScreen = () => {
+const NewsScreen = () => {
   return (
     <SafeScreen>
-      <Text className="text-white">BlogScreen</Text>
+      <Text className="text-white">NewsScreen</Text>
     </SafeScreen>
   );
 };
 
-export default BlogScreen;
+export default NewsScreen;

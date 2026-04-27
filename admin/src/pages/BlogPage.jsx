@@ -88,23 +88,7 @@ const BlogPage = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {blogs.map((blog) => {
-                return (
-                  <div key={blog._id} className="card bg-base-300">
-                    <div className="card-body">
-                      <div className="flex flex-col lg:flex-row gap-6">
-                        <div className="flex-none">
-                          <div className="avatar">
-                            <div className="w-46 rounded-xl relative"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <div className="overflow-x-auto"></div>
           )}
         </div>
       </div>

@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProductsPage from "./pages/ProductsPage";
 import BlogPage from "./pages/BlogPage";
+import NewsPage from "./pages/NewsPage";
 import OrdersPage from "./pages/OrdersPage";
 import CustomersPage from "./pages/CustomersPage";
 import { useAuthStore } from "./store/useAuthStore";
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="blogs" element={<BlogPage />} />
+          <Route path="news" element={<NewsPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="orders" element={<OrdersPage />} />
         </Route>

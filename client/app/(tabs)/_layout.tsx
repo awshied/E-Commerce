@@ -73,15 +73,15 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="blog"
+        name="news"
         options={{
-          title: "Blog",
+          title: "Berita",
           tabBarIcon: ({ focused }) => (
             <Image
               source={
                 focused
-                  ? require("../../assets/images/icons/blog-fill.png")
-                  : require("../../assets/images/icons/blog-outline.png")
+                  ? require("../../assets/images/icons/news-fill.png")
+                  : require("../../assets/images/icons/news-outline.png")
               }
               className="size-7"
             />

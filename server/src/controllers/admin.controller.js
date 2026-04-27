@@ -6,12 +6,13 @@ import { Product } from "../models/product.model.js";
 import { Order } from "../models/order.model.js";
 import { User } from "../models/user.model.js";
 import { Expense } from "../models/expense.model.js";
+import { News } from "../models/news.model.js";
+import { Comment } from "../models/comment.model.js";
 import {
   calculateProductStatus,
   attachFinalPrice,
 } from "../lib/productStatus.js";
 import { validatePromo } from "../lib/validatePromo.js";
-import { Blog } from "../models/blog.model.js";
 
 // Menangkap Semua Notifikasi yang Tersedia
 export const getNotifications = async (_, res) => {
@@ -270,21 +271,39 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-// Membuat atau Menambahkan Blog Baru
-export const createBlog = async (req, res) => {
-  try {
-    const userId = req.user._id;
+// Helper
+const generateUniqueSlug = async (title) => {
+  const base = slugify(title, { lower: true, strict: true });
+  const exists = await News.exists({ slug: base });
+  if (!exists) return base;
+  return `${base}-${Date.now()}`;
+};
 
-    if (req.user.role !== "admin") {
+// Membuat atau Menambahkan Berita Baru
+export const createNews = async (req, res) => {
+  try {
+    const { title, caption, content, tags, draft } = req.body;
+
+    if (!title || !caption || !content || !tags || draft === undefined) {
       return res
-        .status(403)
-        .json({ message: "Hanya admin yang dapat membuat blog baru." });
+        .status(400)
+        .json({ message: "Semua field tidak boleh kosong." });
     }
 
-    const { title, caption, tags } = req.body;
+    if (caption.length > 300) {
+      return res.status(400).json({
+        message: "Caption berita ini tidak boleh lebih dari 300 karakter.",
+      });
+    }
 
-    if (!title) {
-      return res.status(400).json({ message: "Nama blog tidak boleh kosong." });
+    let parsedContent, parsedTags;
+    try {
+      parsedContent = JSON.parse(content);
+      parsedTags = JSON.parse(tags);
+    } catch {
+      return res
+        .status(400)
+        .json({ message: "Format konten atau tags tidak valid." });
     }
 
     if (!req.files || req.files.length === 0) {
@@ -295,14 +314,9 @@ export const createBlog = async (req, res) => {
       return res.status(400).json({ message: "Maksimal hanya 3 gambar." });
     }
 
-    let slug = slugify(title, { lower: true, strict: true });
-
-    const existing = await Blog.findOne({ slug });
-    if (existing) slug += "-" + Date.now();
-
     const uploadPromises = req.files.map((file) => {
       return cloudinary.uploader.upload(file.path, {
-        folder: "blogs",
+        folder: "news",
       });
     });
 
@@ -313,148 +327,182 @@ export const createBlog = async (req, res) => {
       public_id: result.public_id,
     }));
 
-    const parsedTags = Array.isArray(tags)
-      ? tags
-      : tags
-        ? tags.split(",").map((t) => t.trim())
-        : [];
+    const slug = await generateUniqueSlug(title);
 
-    const blog = await Blog.create({
+    const news = await News.create({
       title,
       slug,
       caption,
+      content: parsedContent,
       tags: parsedTags,
-      blogImages: imageUrls,
-      author: userId,
+      newsImages: imageUrls,
+      draft: draft === "true" || draft === true,
+      userId: req.user._id,
     });
 
-    res.status(201).json(blog);
+    res.status(201).json({ message: "Berita berhasil diterbitkan.", news });
   } catch (error) {
-    console.error("Tidak bisa menambahkan blog baru:", error);
+    console.error("Tidak bisa menambahkan berita baru:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
 
-// Menangkap Semua Blog Yang Tersedia
-export const getAllBlogs = async (_, res) => {
+// Menangkap Semua Berita Yang Tersedia
+export const getAllNews = async (req, res) => {
   try {
-    const blogs = await Blog.find()
-      .populate("author", "username imageUrl")
-      .sort({ createdAt: -1 });
+    const { page = 1, limit = 10, tag, draft } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+    const filter = {};
 
-    res.status(200).json({ blogs });
+    if (tag) filter.tags = tag;
+    if (draft !== undefined) filter.draft = draft === "true";
+
+    const [news, total] = await Promise.all([
+      News.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit))
+        .select(
+          "title slug caption tags newsImages activity userId createdAt draft",
+        )
+        .populate("userId", "username imageUrl"),
+      News.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      message: "Tinjau semua berita yang telah Anda terbitkan.",
+      news,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    });
   } catch (error) {
-    console.error("Error pada controller getAllBlogs:", error);
+    console.error("Berita tidak terbaca:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
 
-// Memperbarui Blog
-export const updateBlog = async (req, res) => {
+// Memperbarui Berita
+export const updateNews = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Hanya admin yang dapat memperbarui blog." });
-    }
-
     const { id } = req.params;
-    const { title, caption, tags } = req.body;
+    const { title, caption, content, tags, draft } = req.body;
 
-    const blog = await Blog.findById(id);
-    if (!blog) {
-      return res.status(404).json({ message: "Blog tidak ditemukan." });
+    const news = await News.findById(id);
+    if (!news) {
+      return res.status(404).json({ message: "Berita tidak ditemukan." });
     }
 
-    if (title) {
-      let newSlug = slugify(title, { lower: true, strict: true });
+    if (title) news.title = title;
+    if (caption) news.caption = caption;
 
-      const existing = await Blog.findOne({
-        slug: newSlug,
-        _id: { $ne: id },
-      });
-
-      if (existing) {
-        newSlug += "-" + Date.now();
+    if (content) {
+      try {
+        news.content = JSON.parse(content);
+      } catch {
+        return res.status(400).json({ message: "Format konten tidak valid." });
       }
-
-      blog.title = title;
-      blog.slug = newSlug;
     }
-
-    if (caption) blog.caption = caption;
 
     if (tags) {
-      blog.tags = Array.isArray(tags)
-        ? tags
-        : tags.split(",").map((t) => t.trim());
+      try {
+        news.tags = JSON.parse(tags);
+      } catch {
+        return res.status(400).json({ message: "Format tags tidak valid." });
+      }
     }
+
+    if (draft !== undefined) news.draft = draft === "true" || draft === true;
 
     if (req.files && req.files.length > 0) {
       if (req.files.length > 3) {
         return res.status(400).json({ message: "Maksimal hanya 3 gambar." });
       }
 
+      if (news.newsImages && news.newsImages.length > 0) {
+        const deletePromises = news.newsImages.map((newsImage) =>
+          cloudinary.uploader.destroy(newsImage.public_id),
+        );
+
+        await Promise.all(deletePromises);
+      }
+
       const uploadPromises = req.files.map((file) => {
         return cloudinary.uploader.upload(file.path, {
-          folder: "blogs",
+          folder: "news",
         });
       });
 
       const uploadResults = await Promise.all(uploadPromises);
-
-      if (blog.blogImages && blog.blogImages.length > 0) {
-        try {
-          const deletePromises = blog.blogImages.map((image) =>
-            cloudinary.uploader.destroy(image.public_id),
-          );
-          await Promise.all(deletePromises);
-        } catch (err) {
-          console.error("Gagal menghapus gambar Blog yang lama:", err);
-        }
-      }
-
-      blog.blogImages = uploadResults.map((result) => ({
+      news.newsImages = uploadResults.map((result) => ({
         url: result.secure_url,
         public_id: result.public_id,
       }));
     }
 
-    await blog.save();
-    res.status(200).json({ message: "Blog berhasil diperbarui.", blog });
+    await news.save();
+    res.status(200).json({ message: "Berita berhasil diperbarui.", news });
   } catch (error) {
-    console.error("Error pada controller updateBlog:", error);
+    console.error("Tidak bisa memperbarui berita:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };
 
-// Menghapus Blog
-export const deleteBlog = async (req, res) => {
+// Menghapus Berita
+export const deleteNews = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Hanya admin yang dapat menghapus blog." });
-    }
-
     const { id } = req.params;
 
-    const blog = await Blog.findById(id);
-    if (!blog) {
-      return res.status(404).json({ message: "Blog tidak ditemukan." });
+    const news = await News.findById(id);
+    if (!news) {
+      return res.status(404).json({ message: "Berita tidak ditemukan." });
     }
 
-    if (blog.blogImages && blog.blogImages.length > 0) {
-      const deletePromises = blog.blogImages.map((image) =>
-        cloudinary.uploader.destroy(image.public_id),
+    if (news.newsImages && news.newsImages.length > 0) {
+      const deletePromises = news.newsImages.map((newsImage) =>
+        cloudinary.uploader.destroy(newsImage.public_id),
       );
+
       await Promise.all(deletePromises);
     }
 
-    await Blog.findByIdAndDelete(id);
-    res.status(200).json({ message: "Blog berhasil dihapus." });
+    await Comment.deleteMany({ newsId: id });
+    await News.findByIdAndDelete(id);
+    res.status(200).json({ message: "Berita berhasil dihapus." });
   } catch (error) {
-    console.error("Tidak bisa menghapus blog:", error);
+    console.error("Tidak bisa menghapus berita:", error);
+    res.status(500).json({ message: "Server internal error." });
+  }
+};
+
+// Menyembunyikan Komentar
+export const hideComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Hanya admin yang dapat menyembunyikan komentar." });
+    }
+
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Komentar tidak ditemukan." });
+    }
+
+    comment.isHidden = !comment.isHidden;
+    await comment.save();
+
+    res.status(200).json({
+      message: `Komentar berhasil ${comment.isHidden ? "disembunyikan" : "ditampilkan kembali"}.`,
+      isHidden: comment.isHidden,
+    });
+  } catch (error) {
+    console.error("Gagal menyembunyikan komentar:", error);
     res.status(500).json({ message: "Server internal error." });
   }
 };

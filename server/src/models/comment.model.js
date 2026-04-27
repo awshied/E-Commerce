@@ -1,64 +1,60 @@
 import mongoose from "mongoose";
 
-const reactionSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    type: {
-      type: String,
-      enum: ["agree", "disagree", "love"],
-      required: true,
-    },
-  },
-  { _id: false },
-);
-
-const replySchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    message: {
-      type: String,
-      required: true,
-    },
-    reactions: [reactionSchema],
-  },
-  { timestamps: true },
-);
-
 const commentSchema = new mongoose.Schema(
   {
-    blogId: {
+    newsId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Blog",
+      ref: "News",
       required: true,
-      index: true,
     },
-    userId: {
+    commentedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
     },
     comment: {
       type: String,
       required: true,
     },
-    reactions: [reactionSchema],
-    replies: [replySchema],
+    children: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Comment",
+      default: [],
+    },
+    isReply: {
+      type: Boolean,
+      default: false,
+    },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
+    },
     isHidden: {
       type: Boolean,
       default: false,
+    },
+    activity: {
+      totalLikes: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      totalDislikes: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      likedBy: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "User",
+        default: [],
+      },
+      dislikedBy: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "User",
+        default: [],
+      },
     },
   },
   {
@@ -66,6 +62,7 @@ const commentSchema = new mongoose.Schema(
   },
 );
 
-commentSchema.index({ blogId: 1, createdAt: -1 });
+commentSchema.index({ newsId: 1 });
+commentSchema.index({ parent: 1 });
 
 export const Comment = mongoose.model("Comment", commentSchema);

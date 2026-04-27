@@ -40,6 +40,11 @@ export const navigationBar = [
         path: "/blogs",
         icon: blog,
       },
+      {
+        name: "Berita",
+        path: "/news",
+        icon: blog,
+      },
     ],
   },
   {

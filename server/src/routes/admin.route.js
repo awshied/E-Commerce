@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import {
-  createBlog,
+  createNews,
   createProduct,
   deleteAllNotifications,
-  deleteBlog,
+  deleteNews,
   deleteNotification,
   deleteProduct,
-  getAllBlogs,
   getAllCustomers,
+  getAllNews,
   getAllOrders,
   getAllProducts,
   getCustomersWithStats,
@@ -16,13 +16,13 @@ import {
   getNotifications,
   getRevenueExpenseChart,
   getUserOnlineStatus,
+  hideComment,
   markAsRead,
-  updateBlog,
+  updateNews,
   updateOrderStatus,
   updateProduct,
 } from "../controllers/admin.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { hideComment } from "../controllers/comment.controller.js";
 
 const router = Router();
 
@@ -40,11 +40,14 @@ router.get("/products", getAllProducts);
 router.put("/products/:id", upload.array("images", 3), updateProduct);
 router.delete("/products/:id", deleteProduct);
 
-// Kelola Blog
-router.post("/blogs", upload.array("blogImages", 3), createBlog);
-router.get("/blogs", getAllBlogs);
-router.put("/blogs/:id", upload.array("blogImages", 3), updateBlog);
-router.delete("/blogs/:id", deleteBlog);
+// Kelola Berita
+router.post("/news", upload.array("newsImages", 3), createNews);
+router.get("/news", getAllNews);
+router.put("/news/:id", upload.array("newsImages", 3), updateNews);
+router.delete("/news/:id", deleteNews);
+
+// Sembunyikan Komentar
+router.put("/comments/:commentId/hide", hideComment);
 
 // Kelola Pesanan
 router.get("/orders", getAllOrders);
@@ -58,8 +61,5 @@ router.get("/customers/stats", getCustomersWithStats);
 router.get("/stats", getDashboardStats);
 router.get("/revenueExpense", getRevenueExpenseChart);
 router.get("/onlineStatus", getUserOnlineStatus);
-
-// Menyembunyikan Ulasan
-router.patch("/:commentId/hide", hideComment);
 
 export default router;

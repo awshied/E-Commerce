@@ -94,16 +94,27 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     addresses: [addressSchema],
-    likedBlogs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Blog",
-      },
-    ],
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
+      },
+    ],
+    newsReads: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    newsLikes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "News",
+      },
+    ],
+    newsDislikes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "News",
       },
     ],
     lastActive: {

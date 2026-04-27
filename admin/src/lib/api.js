@@ -71,6 +71,29 @@ export const blogApi = {
   },
 };
 
+// Berita
+export const newsApi = {
+  getAll: async () => {
+    const { data } = await axiosInstance.get("/admin/news");
+    return data;
+  },
+
+  create: async (formData) => {
+    const { data } = await axiosInstance.post("/admin/news", formData);
+    return data;
+  },
+
+  update: async ({ id, formData }) => {
+    const { data } = await axiosInstance.put(`/admin/news/${id}`, formData);
+    return data;
+  },
+
+  delete: async (newsId) => {
+    const { data } = await axiosInstance.delete(`/admin/news/${newsId}`);
+    return data;
+  },
+};
+
 // Pesanan
 export const orderApi = {
   getAll: async () => {
