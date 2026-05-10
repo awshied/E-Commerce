@@ -36,11 +36,6 @@ export const navigationBar = [
         icon: product,
       },
       {
-        name: "Blog",
-        path: "/blogs",
-        icon: blog,
-      },
-      {
         name: "Berita",
         path: "/news",
         icon: blog,

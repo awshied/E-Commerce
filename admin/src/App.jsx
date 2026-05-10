@@ -6,8 +6,8 @@ import useUserPing from "./hooks/useUserPing";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProductsPage from "./pages/ProductsPage";
-import BlogPage from "./pages/BlogPage";
 import NewsPage from "./pages/NewsPage";
+import CommentPage from "./pages/CommentPage";
 import OrdersPage from "./pages/OrdersPage";
 import CustomersPage from "./pages/CustomersPage";
 import { useAuthStore } from "./store/useAuthStore";
@@ -35,14 +35,16 @@ const App = () => {
           path="/"
           element={authUser ? <DashboardLayout /> : <Navigate to={"/login"} />}
         >
-          <Route index element={<Navigate to={"/dashboard"} />} />
+          <Route index element={<Navigate to={"/dashboard"} replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductsPage />} />
-          <Route path="blogs" element={<BlogPage />} />
           <Route path="news" element={<NewsPage />} />
+          <Route path="news/:newsId/comments" element={<CommentPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="orders" element={<OrdersPage />} />
         </Route>
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
 
       <Toaster />

@@ -355,8 +355,10 @@ export const getAllNews = async (req, res) => {
     const filter = {};
 
     if (tag) filter.tags = tag;
-    if (draft !== undefined) filter.draft = draft === "true";
 
+    if (draft !== undefined && draft !== "") {
+      filter.draft = draft === "true";
+    }
     const [news, total] = await Promise.all([
       News.find(filter)
         .sort({ createdAt: -1 })

@@ -92,11 +92,11 @@ export const getNewsById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const news = await News.findOneAndUpdate(
-      { _id: id, draft: false },
-      { $inc: { "activity.totalViews": 1 } },
-      { new: true },
-    ).populate("userId", "username imageUrl");
+    const news = await News.findById(id).populate(
+      "userId",
+      "username imageUrl",
+    );
+
     if (!news)
       return res.status(404).json({ message: "Berita tidak ditemukan." });
 

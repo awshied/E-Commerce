@@ -50,8 +50,27 @@ export const productApi = {
 
 // Berita
 export const newsApi = {
-  getAll: async () => {
-    const { data } = await axiosInstance.get("/admin/news");
+  getAll: async (draftStatus = null) => {
+    let url = "/admin/news";
+    if (draftStatus !== null) {
+      url += `?draft=${draftStatus}`;
+    }
+    const { data } = await axiosInstance.get(url);
+    return data;
+  },
+
+  getPublished: async () => {
+    const { data } = await axiosInstance.get("/admin/news?draft=false");
+    return data;
+  },
+
+  getDrafts: async () => {
+    const { data } = await axiosInstance.get("/admin/news?draft=true");
+    return data;
+  },
+
+  getById: async (newsId) => {
+    const { data } = await axiosInstance.get(`/news/${newsId}`);
     return data;
   },
 
