@@ -16,6 +16,10 @@ import newsCaption from "../assets/icons/news-caption.png";
 import newsContent from "../assets/icons/news-content.png";
 import newsTags from "../assets/icons/news-tags.png";
 import TagInput from "../components/TagInput";
+import calendar from "../assets/icons/calendar.png";
+import like from "../assets/icons/like.png";
+import dislike from "../assets/icons/dislike.png";
+import commentChat from "../assets/icons/comment.png";
 
 const NewsPage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -218,24 +222,20 @@ const NewsPage = () => {
 
       <div className="card bg-base-300 shadow-xl">
         <div className="card-body p-3">
-          <div className="tabs tabs-boxed bg-base-200 p-1">
+          <div className="tabs tabs-boxed p-1">
             <button
-              className={`tab flex items-center text-sm font-semibold gap-2 ${activeTab === "published" ? "tab-active" : ""}`}
+              className={`tab flex items-center gap-1.5 ${activeTab === "published" ? "tab-active" : ""}`}
               onClick={() => setActiveTab("published")}
             >
-              Publikasi
-              <span className="badge badge-sm badge-success text-xs">
-                {publishedCount}
-              </span>
+              <h3 className="font-semibold text-sm">Publikasi</h3>
+              <span className="text-xs text-[#ffc586]">({publishedCount})</span>
             </button>
             <button
-              className={`tab flex items-center text-sm font-semibold gap-2 ${activeTab === "draft" ? "tab-active" : ""}`}
+              className={`tab flex items-center gap-1.5 ${activeTab === "draft" ? "tab-active" : ""}`}
               onClick={() => setActiveTab("draft")}
             >
-              Draft
-              <span className="badge badge-sm badge-warning text-xs">
-                {draftCount}
-              </span>
+              <h3 className="font-semibold text-sm">Draft</h3>
+              <span className="text-xs text-[#ffc586]">({draftCount})</span>
             </button>
           </div>
         </div>
@@ -295,7 +295,7 @@ const NewsPage = () => {
               {newsData.map((news) => (
                 <div
                   key={news._id}
-                  className="card bg-base-200 hover:shadow-lg transition-shadow"
+                  className="card hover:shadow-lg transition-shadow"
                 >
                   <div className="card-body">
                     <div className="flex flex-col lg:flex-row gap-6">
@@ -316,21 +316,29 @@ const NewsPage = () => {
                       <div className="flex-1">
                         <div className="flex items-start justify-between flex-wrap gap-2">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              <h2 className="card-title text-xl font-extrabold">
-                                {news.title}
-                              </h2>
-                              {news.draft ? (
-                                <span className="bg-warning/20 text-warning text-xs px-2 py-1 rounded font-semibold flex items-center gap-1">
-                                  Draft
-                                </span>
-                              ) : (
-                                <span className="bg-success/20 text-success text-xs px-2 py-1 rounded font-semibold flex items-center gap-1">
-                                  Publikasi
-                                </span>
-                              )}
+                            <h2 className="card-title text-xl mb-3 font-extrabold">
+                              {news.title}
+                            </h2>
+                            <div className="flex items-center gap-4 mb-3">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={calendar}
+                                  alt={calendar}
+                                  className="w-4 h-4"
+                                />
+                                <p className="text-base-content text-sm font-semibold">
+                                  {new Date(news.createdAt).toLocaleDateString(
+                                    "id-ID",
+                                  )}
+                                </p>
+                              </div>
+                              <div className="bg-base-content w-1 h-1 rounded-full" />
+                              <span className="text-base-content text-sm font-semibold">
+                                Dilihat oleh {news.activity?.totalViews || 0}{" "}
+                                pengguna
+                              </span>
                             </div>
-                            <p className="text-base-content/70 text-sm mb-2 line-clamp-2">
+                            <p className="text-base-content/70 font-semibold text-sm mb-3 line-clamp-2">
                               {news.caption}
                             </p>
 
@@ -338,63 +346,79 @@ const NewsPage = () => {
                               {news.tags?.map((tag, idx) => (
                                 <span
                                   key={idx}
-                                  className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full flex items-center gap-1"
+                                  className="bg-base-100 text-base-content shadow-xl font-semibold text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5"
                                 >
                                   {tag}
                                 </span>
                               ))}
                             </div>
 
-                            <div className="flex items-center gap-4 text-sm text-base-content/60">
-                              <span>👍 {news.activity?.totalLikes || 0}</span>
-                              <span>
-                                👎 {news.activity?.totalDislikes || 0}
-                              </span>
-                              <span>
-                                💬 {news.activity?.totalComments || 0}
-                              </span>
-                              <span>👁️ {news.activity?.totalViews || 0}</span>
-                              <span>
-                                📅{" "}
-                                {new Date(news.createdAt).toLocaleDateString(
-                                  "id-ID",
-                                )}
-                              </span>
+                            <div className="flex items-center gap-6">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={like}
+                                  alt={like}
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-sm text-base-content/70 font-semibold">
+                                  {news.activity?.totalLikes || 0}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={dislike}
+                                  alt={dislike}
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-sm text-base-content/70 font-semibold">
+                                  {news.activity?.totalDislikes || 0}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={commentChat}
+                                  alt={commentChat}
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-sm text-base-content/70 font-semibold">
+                                  {news.activity?.totalComments || 0}
+                                </span>
+                              </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-center gap-3 shrink-0 justify-center">
                             <Link
                               to={`/news/${news._id}/comments`}
-                              className="btn btn-square btn-ghost btn-sm"
+                              className="btn btn-square btn-ghost"
                               title="Kelola Komentar"
                             >
-                              <img src={view} alt="view" className="w-5 h-5" />
+                              <img src={view} alt="view" className="w-6 h-6" />
                             </Link>
                             <button
-                              className="btn btn-square btn-ghost btn-sm"
+                              className="btn btn-square btn-ghost"
                               onClick={() => handleEdit(news)}
                               title="Edit Berita"
                             >
                               <img
                                 src={newsEdit}
                                 alt="edit"
-                                className="w-5 h-5"
+                                className="w-6 h-6"
                               />
                             </button>
                             <button
-                              className="btn btn-square btn-ghost btn-sm text-error"
+                              className="btn btn-square btn-ghost text-error"
                               onClick={() => handleDelete(news._id, news.title)}
                               title="Hapus Berita"
                               disabled={deletingNewsId === news._id}
                             >
                               {deletingNewsId === news._id ? (
-                                <span className="loading loading-spinner loading-xs"></span>
+                                <span className="loading loading-spinner"></span>
                               ) : (
                                 <img
                                   src={trash}
                                   alt="delete"
-                                  className="w-5 h-5"
+                                  className="w-6 h-6"
                                 />
                               )}
                             </button>
