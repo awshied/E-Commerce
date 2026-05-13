@@ -11,3 +11,13 @@ export const statsApi = {
 export const useApi = () => {
   return useMemo(() => axiosInstance, []);
 };
+
+export const handleApiError = (error: unknown): string => {
+  if (error && typeof error === "object" && "response" in error) {
+    const axiosError = error as { response?: { data?: { message?: string } } };
+    return (
+      axiosError.response?.data?.message || "Terjadi kesalahan pada server"
+    );
+  }
+  return "Terjadi kesalahan yang tidak diketahui";
+};

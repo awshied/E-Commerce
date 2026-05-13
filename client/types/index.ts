@@ -1,3 +1,5 @@
+import { NewsContent, PopulatedUser, UserGender, UserRole } from "@/lib/type";
+
 export interface Size {
   size: string;
   price: number;
@@ -59,12 +61,6 @@ export interface Address {
   isDefault: boolean;
 }
 
-export type AddressFormType = Omit<Address, "_id">;
-
-export type UserRole = "user" | "admin";
-
-export type UserGender = "unknown" | "pria" | "wanita";
-
 export interface User {
   _id: string;
   username: string;
@@ -75,6 +71,9 @@ export interface User {
   imageUrl: string;
   addresses: Address[];
   wishlist: string[];
+  newsReads: number;
+  newsLikes: string[];
+  newsDislikes: string[];
   lastActive: string;
   createdAt: string;
   updatedAt: string;
@@ -155,27 +154,141 @@ export interface Expense {
   updatedAt: string;
 }
 
-export interface Reaction {
-  _id: string;
-  userId: string;
-  type: string;
+export interface NewsImage {
+  url: string;
+  public_id: string;
 }
 
-export interface Reply {
+export interface NewsActivities {
+  totalLikes: number;
+  totalDislikes: number;
+  totalComments: number;
+  totalViews: number;
+  totalParentComments: number;
+}
+
+export interface News {
   _id: string;
-  userId: string;
-  message: string;
+  title: string;
+  slug: string;
+  caption: string;
+  newsImages: NewsImage[];
+  content: NewsContent;
+  tags: string[];
+  userId: string | User;
+  activity: NewsActivities[];
+  comments: string[];
+  draft: boolean;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentActivity {
+  totalLikes: number;
+  totalDislikes: number;
+  likedBy: string[];
+  dislikedBy: string[];
 }
 
 export interface Comment {
   _id: string;
-  productId: string;
+  newsId: string;
   userId: string | User;
   comment: string;
-  reactions: Reaction[];
-  replies: Reply[];
+  children: Comment[];
+  isReply: boolean;
+  parent: string | null;
   isHidden: boolean;
+  activity: CommentActivity;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ApiResponse<T = unknown> {
+  message: string;
+  data?: T;
+  news?: News | News[];
+  comment?: Comment;
+  comments?: Comment[];
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface CreateCommentRequest {
+  newsId: string;
+  comment: string;
+  parentId?: string | null;
+}
+
+export interface ReactToNewsRequest {
+  type: "like" | "dislike";
+}
+
+export interface ReactToCommentRequest {
+  type: "like" | "dislike";
+}
+
+export interface UpdateCommentRequest {
+  comment: string;
+}
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface NewsQueryParams extends PaginationParams {
+  tag?: string;
+}
+
+export interface CommentQueryParams {
+  newsId: string;
+}
+
+export interface RepliesResponse {
+  replies: Comment[];
+}
+
+export interface NewsListScreenProps {
+  news: News[];
+  isLoading: boolean;
+  isRefreshing: boolean;
+  onRefresh: () => void;
+  onNewsPress: (newsId: string) => void;
+  onLoadMore?: () => void;
+}
+
+export interface NewsDetailScreenProps {
+  newsId: string;
+  news?: News | null;
+  comments?: Comment[];
+  isLoading: boolean;
+  isSubmitting?: boolean;
+  onReactToNews: (type: "like" | "dislike") => void;
+  onCreateComment: (comment: string, parentId?: string | null) => void;
+  onReactToComment: (commentId: string, type: "like" | "dislike") => void;
+}
+
+export interface CommentItemProps {
+  comment: Comment;
+  level?: number;
+  currentUserId?: string;
+  isSubmitting?: boolean;
+  onReply: (comment: Comment) => void;
+  onLike: (commentId: string) => void;
+  onDislike: (commentId: string) => void;
+}
+
+export interface PopulatedComment extends Omit<Comment, "userId" | "children"> {
+  userId: PopulatedUser;
+  children: PopulatedComment[];
+}
+
+export interface PopulatedNews extends Omit<News, "userId" | "comments"> {
+  userId: PopulatedUser;
+  comments: PopulatedComment[];
 }
